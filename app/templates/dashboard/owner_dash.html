@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard - Smart Garbage Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #0f0f1e 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+            position: fixed;
+            width: 290px;
+            left: 0;
+            top: 0;
+            color: white;
+            overflow-y: auto;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .sidebar .logo {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+        }
+
+        .sidebar .logo h4 {
+            margin: 0;
+            color: #667eea;
+            font-weight: 700;
+            font-size: 22px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar .logo p {
+            margin: 8px 0 0 0;
+            font-size: 0.8rem;
+            color: #a0aec0;
+        }
+
+        .sidebar .admin-info {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            margin: 0 10px 20px 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .sidebar .admin-info .admin-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: #ecf0f1;
+        }
+
+        .sidebar .admin-info .admin-role {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            margin-top: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 8px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .sidebar .menu {
+            list-style: none;
+        }
+
+        .sidebar .menu li {
+            margin: 0;
+        }
+
+        .sidebar .menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #cbd5e0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-size: 14px;
+        }
+
+        .sidebar .menu a:hover,
+        .sidebar .menu a.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+
+        .sidebar .menu i {
+            width: 25px;
+            margin-right: 15px;
+            text-align: center;
+        }
+
+        .sidebar .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .sidebar .logout-btn:hover {
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+        }
+
+        .main-content {
+            margin-left: 290px;
+            padding: 30px;
+        }
+
+        .navbar-top {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border-top: 4px solid #667eea;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card .stat-icon {
+            font-size: 32px;
+            color: #667eea;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-card .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #0f0f1e;
+            margin: 10px 0 5px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-card .stat-label {
+            color: #718096;
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-card.critical {
+            border-top-color: #e74c3c;
+        }
+
+        .stat-card.critical .stat-icon {
+            color: #e74c3c;
+        }
+
+        .stat-card.success {
+            border-top-color: #27ae60;
+        }
+
+        .stat-card.success .stat-icon {
+            color: #27ae60;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title i {
+            font-size: 32px;
+        }
+
+        .system-alert {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border-left: 4px solid #f39c12;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .system-alert.critical {
+            border-left-color: #e74c3c;
+        }
+
+        .system-alert .alert-icon {
+            font-size: 32px;
+            color: #f39c12;
+        }
+
+        .system-alert.critical .alert-icon {
+            color: #e74c3c;
+        }
+
+        .system-alert .alert-content {
+            flex: 1;
+        }
+
+        .system-alert .alert-title {
+            font-weight: 600;
+            color: #0f0f1e;
+            margin-bottom: 5px;
+        }
+
+        .system-alert .alert-message {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .system-alert .alert-action {
+            display: flex;
+            gap: 10px;
+        }
+
+        .log-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .log-item.error {
+            border-left-color: #e74c3c;
+        }
+
+        .log-item.warning {
+            border-left-color: #f39c12;
+        }
+
+        .log-item.success {
+            border-left-color: #27ae60;
+        }
+
+        .log-info {
+            flex: 1;
+        }
+
+        .log-action {
+            font-weight: 600;
+            color: #0f0f1e;
+            font-size: 14px;
+        }
+
+        .log-user {
+            color: #718096;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .log-time {
+            color: #718096;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .data-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .data-table table {
+            margin-bottom: 0;
+        }
+
+        .data-table th {
+            background: #f7fafc;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+            color: #0f0f1e;
+            padding: 15px;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #4a5568;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .status-badge.critical {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .config-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .config-card .config-title {
+            font-weight: 600;
+            color: #0f0f1e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .config-card .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .config-card .config-item:last-child {
+            border-bottom: none;
+        }
+
+        .config-label {
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .config-value {
+            font-family: 'Courier New', monospace;
+            background: #f7fafc;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: #0f0f1e;
+            font-size: 12px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .backup-history {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .backup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .backup-item:last-child {
+            border-bottom: none;
+        }
+
+        .backup-info {
+            flex: 1;
+        }
+
+        .backup-name {
+            font-weight: 600;
+            color: #0f0f1e;
+        }
+
+        .backup-details {
+            color: #718096;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .backup-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .sidebar .logo h4,
+            .sidebar .logo p,
+            .sidebar .admin-info,
+            .sidebar .menu span {
+                display: none;
+            }
+
+            .sidebar .logo {
+                padding: 15px;
+            }
+
+            .main-content {
+                margin-left: 70px;
+                padding: 15px;
+            }
+
+            .system-alert {
+                flex-direction: column;
+            }
+
+            .log-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .uptime-badge {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .district-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 3px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .district-name {
+            font-weight: 600;
+            color: #0f0f1e;
+        }
+
+        .district-taluka {
+            color: #718096;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo">
+            <h4><i class="fas fa-shield-alt"></i> SGMS</h4>
+            <p>System Control</p>
+        </div>
+
+        <div class="admin-info">
+            <div class="admin-name">System Administrator</div>
+            <div class="admin-role">
+                <i class="fas fa-crown"></i> Super Admin
+            </div>
+        </div>
+
+        <ul class="menu">
+            <li><a href="#" class="active"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#infrastructureModal"><i class="fas fa-building"></i> <span>Infrastructure</span></a></li>
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#adminModal"><i class="fas fa-users-cog"></i> <span>Admin Management</span></a></li>
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#logsModal"><i class="fas fa-server"></i> <span>System Logs</span></a></li>
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#backupModal"><i class="fas fa-database"></i> <span>Backup & Recovery</span></a></li>
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#configModal"><i class="fas fa-cogs"></i> <span>Configuration</span></a></li>
+            <li><a href="#"><i class="fas fa-chart-line"></i> <span>System Health</span></a></li>
+            <li><a href="#"><i class="fas fa-shield-alt"></i> <span>Security</span></a></li>
+        </ul>
+
+        <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- NAVBAR -->
+        <div class="navbar-top">
+            <div>
+                <h5 style="margin: 0; color: #0f0f1e;">
+                    <i class="fas fa-heartbeat"></i> System Health & Monitoring
+                </h5>
+            </div>
+            <div>
+                <span class="uptime-badge"><i class="fas fa-check-circle"></i> 99.98% Uptime</span>
+            </div>
+        </div>
+
+        <!-- CRITICAL SYSTEM METRICS -->
+        <div class="section-title">
+            <i class="fas fa-tachometer-alt"></i> System Performance Metrics
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-globe stat-icon"></i>
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Active Districts</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-users stat-icon"></i>
+                    <div class="stat-number">156K</div>
+                    <div class="stat-label">Total Active Users</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card critical">
+                    <i class="fas fa-exclamation-triangle stat-icon"></i>
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">Critical Alerts</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card success">
+                    <i class="fas fa-server stat-icon"></i>
+                    <div class="stat-number">98.5%</div>
+                    <div class="stat-label">Server Health</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CRITICAL SYSTEM ALERTS -->
+        <div class="section-title" style="margin-top: 40px;">
+            <i class="fas fa-exclamation-circle"></i> Critical System Alerts
+        </div>
+
+        <div class="system-alert critical">
+            <div class="alert-icon">
+                <i class="fas fa-hdd"></i>
+            </div>
+            <div class="alert-content">
+                <div class="alert-title">Database Storage at 87%</div>
+                <div class="alert-message">Main database server is running low on disk space. Recommended action: Archive old logs and files.</div>
+            </div>
+            <div class="alert-action">
+                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#archiveModal">
+                    Archive Now
+                </button>
+            </div>
+        </div>
+
+        <div class="system-alert">
+            <div class="alert-icon">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <div class="alert-content">
+                <div class="alert-title">API Rate Limit Warning</div>
+                <div class="alert-message">Payment gateway API approaching daily limit. Current usage: 8,500 / 10,000 requests.</div>
+            </div>
+            <div class="alert-action">
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#apiModal">
+                    Manage APIs
+                </button>
+            </div>
+        </div>
+
+        <!-- SYSTEM LOGS -->
+        <div class="section-title" style="margin-top: 40px;">
+            <i class="fas fa-list"></i> Real-Time System Activity Logs
+        </div>
+
+        <div class="log-item error">
+            <div class="log-info">
+                <div class="log-action"><i class="fas fa-times-circle"></i> Failed Login Attempt</div>
+                <div class="log-user">User: admin_pune (District Admin - Pune)</div>
+            </div>
+            <div class="log-time">2 mins ago</div>
+        </div>
+
+        <div class="log-item warning">
+            <div class="log-info">
+                <div class="log-action"><i class="fas fa-exclamation-triangle"></i> Worker Account Suspended</div>
+                <div class="log-user">Worker: Raj Singh (Akole Taluka) - Reason: 5 consecutive task failures</div>
+            </div>
+            <div class="log-time">15 mins ago</div>
+        </div>
+
+        <div class="log-item success">
+            <div class="log-info">
+                <div class="log-action"><i class="fas fa-check-circle"></i> Database Backup Completed</div>
+                <div class="log-user">Backup ID: backup_20260409_0300 | Size: 2.3 GB</div>
+            </div>
+            <div class="log-time">1 hour ago</div>
+        </div>
+
+        <div class="log-item">
+            <div class="log-info">
+                <div class="log-action"><i class="fas fa-plus-circle"></i> New District Admin Created</div>
+                <div class="log-user">District: Nagpur | Admin: Dr. Ramesh Patel</div>
+            </div>
+            <div class="log-time">3 hours ago</div>
+        </div>
+
+        <div class="log-item">
+            <div class="log-info">
+                <div class="log-action"><i class="fas fa-user-check"></i> Payment Gateway Configuration Updated</div>
+                <div class="log-user">Gateway: PhonePe | Last Updated: 3 hours ago</div>
+            </div>
+            <div class="log-time">3 hours ago</div>
+        </div>
+
+        <!-- BACKUP & RECOVERY STATUS -->
+        <div class="section-title" style="margin-top: 40px;">
+            <i class="fas fa-database"></i> Backup & Recovery Status
+        </div>
+
+        <div class="backup-history">
+            <div class="backup-item">
+                <div class="backup-info">
+                    <div class="backup-name">backup_20260409_0300</div>
+                    <div class="backup-details">Automatic Full Backup | Size: 2.3 GB | Encrypted</div>
+                </div>
+                <span class="backup-status">Successful</span>
+                <button class="btn btn-sm btn-outline-primary ms-3">Restore</button>
+            </div>
+            <div class="backup-item">
+                <div class="backup-info">
+                    <div class="backup-name">backup_20260408_0300</div>
+                    <div class="backup-details">Automatic Full Backup | Size: 2.1 GB | Encrypted</div>
+                </div>
+                <span class="backup-status">Successful</span>
+                <button class="btn btn-sm btn-outline-primary ms-3">Restore</button>
+            </div>
+            <div class="backup-item">
+                <div class="backup-info">
+                    <div class="backup-name">backup_20260407_0300</div>
+                    <div class="backup-details">Automatic Full Backup | Size: 1.9 GB | Encrypted</div>
+                </div>
+                <span class="backup-status">Successful</span>
+                <button class="btn btn-sm btn-outline-primary ms-3">Restore</button>
+            </div>
+        </div>
+
+        <button class="btn btn-danger mb-3" data-bs-toggle="modal" data-bs-target="#backupModal">
+            <i class="fas fa-plus"></i> Trigger Manual Backup
+        </button>
+
+        <!-- DISTRICTS MANAGEMENT -->
+        <div class="section-title" style="margin-top: 40px;">
+            <i class="fas fa-map"></i> Active Districts & Infrastructure
+        </div>
+
+        <div class="district-item">
+            <div>
+                <div class="district-name">Pune District</div>
+                <div class="district-taluka">Admin: Vikram Verma | 5 Talukas | 45 Workers | 156K Users</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-sm btn-outline-primary">Edit</button>
+                <button class="btn btn-sm btn-outline-secondary">Stats</button>
+            </div>
+        </div>
+
+        <div class="district-item">
+            <div>
+                <div class="district-name">Nagpur District</div>
+                <div class="district-taluka">Admin: Dr. Ramesh Patel | 3 Talukas | 28 Workers | 89K Users</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-sm btn-outline-primary">Edit</button>
+                <button class="btn btn-sm btn-outline-secondary">Stats</button>
+            </div>
+        </div>
+
+        <div class="district-item">
+            <div>
+                <div class="district-name">Aurangabad District</div>
+                <div class="district-taluka">Admin: Priya Desai | 4 Talukas | 32 Workers | 102K Users</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-sm btn-outline-primary">Edit</button>
+                <button class="btn btn-sm btn-outline-secondary">Stats</button>
+            </div>
+        </div>
+
+        <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#infrastructureModal">
+            <i class="fas fa-plus"></i> Add New District
+        </button>
+
+        <!-- PLATFORM CONFIGURATION -->
+        <div class="section-title" style="margin-top: 40px;">
+            <i class="fas fa-cogs"></i> Platform Configuration & Credentials
+        </div>
+
+        <div class="config-card">
+            <div class="config-title">
+                <i class="fas fa-mobile-alt"></i> Payment Gateway Configuration
+            </div>
+            <div class="config-item">
+                <span class="config-label">PhonePe API Key:</span>
+                <span class="config-value">••••••••••••••••5a2b</span>
+                <button class="btn btn-xs btn-outline-secondary ms-auto" style="font-size: 11px;">Edit</button>
+            </div>
+            <div class="config-item">
+                <span class="config-label">PhonePe Merchant ID:</span>
+                <span class="config-value">MERCHANT_SGMS_PUNE</span>
+                <button class="btn btn-xs btn-outline-secondary ms-auto" style="font-size: 11px;">Edit</button>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Razorpay API Key:</span>
+                <span class="config-value">••••••••••••••••8f9c</span>
+                <button class="btn btn-xs btn-outline-secondary ms-auto" style="font-size: 11px;">Edit</button>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Payment Webhook URL:</span>
+                <span class="config-value">https://api.sgms.in/payments/webhook</span>
+                <button class="btn btn-xs btn-outline-secondary ms-auto" style="font-size: 11px;">Edit</button>
+            </div>
+        </div>
+
+        <div class="config-card">
+            <div class="config-title">
+                <i class="fas fa-cloud"></i> External Services & APIs
+            </div>
+            <div class="config-item">
+                <span class="config-label">Weather API Key:</span>
+                <span class="config-value">••••••••••••••••3x4y</span>
+                <button class="btn btn-xs btn-outline-secondary ms-auto" style="font-size: 11px;">Edit</button>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Google Maps API Key:</span>
+                <span class="config-value">••••••••••••••••7k2m</span>
+                <button class="btn btn-xs btn-outline-secondary ms-auto" style="font-size: 11px;">Edit</button>
+            </div>
+            <div class="config-item">
+                <span class="config-label">SMTP Server:</span>
+                <span class="config-value">smtp.gmail.com:587</span>
+                <button class="btn btn-xs btn-outline-secondary ms-auto" style="font-size: 11px;">Edit</button>
+            </div>
+            <div class="config-item">
+                <span class="config-label">SMS Gateway Provider:</span>
+                <span class="config-value">Twilio (Active)</span>
+                <button class="btn btn-xs btn-outline-secondary ms-auto" style="font-size: 11px;">Edit</button>
+            </div>
+        </div>
+
+        <!-- ADMIN USERS MANAGEMENT -->
+        <div class="section-title" style="margin-top: 40px;">
+            <i class="fas fa-users-cog"></i> District Admin Accounts
+        </div>
+
+        <div class="data-table">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Admin Name</th>
+                        <th>District</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Vikram Verma</strong></td>
+                        <td>Pune</td>
+                        <td>vikram@sgms.in</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td>2 mins ago</td>
+                        <td>
+                            <button class="btn btn-xs btn-outline-primary" style="font-size: 11px;">Edit</button>
+                            <button class="btn btn-xs btn-outline-secondary" style="font-size: 11px;">Suspend</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dr. Ramesh Patel</strong></td>
+                        <td>Nagpur</td>
+                        <td>ramesh@sgms.in</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td>15 mins ago</td>
+                        <td>
+                            <button class="btn btn-xs btn-outline-primary" style="font-size: 11px;">Edit</button>
+                            <button class="btn btn-xs btn-outline-secondary" style="font-size: 11px;">Suspend</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Priya Desai</strong></td>
+                        <td>Aurangabad</td>
+                        <td>priya@sgms.in</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td>45 mins ago</td>
+                        <td>
+                            <button class="btn btn-xs btn-outline-primary" style="font-size: 11px;">Edit</button>
+                            <button class="btn btn-xs btn-outline-secondary" style="font-size: 11px;">Suspend</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#adminModal">
+            <i class="fas fa-user-plus"></i> Create New Admin
+        </button>
+    </div>
+
+    <!-- INFRASTRUCTURE MODAL -->
+    <div class="modal fade" id="infrastructureModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-building"></i> Infrastructure Setup</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <h6 style="margin-bottom: 20px;">Add New District</h6>
+                        <div class="mb-3">
+                            <label class="form-label">District Name</label>
+                            <input type="text" class="form-control" placeholder="e.g., Nashik">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">District Code</label>
+                            <input type="text" class="form-control" placeholder="e.g., NK01">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">State</label>
+                            <select class="form-control">
+                                <option>Maharashtra</option>
+                                <option>Gujarat</option>
+                                <option>Karnataka</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Initial Talukas (comma-separated)</label>
+                            <textarea class="form-control" rows="3" placeholder="e.g., Nashik, Sinnar, Malegaon"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">District Admin Email (will be invited)</label>
+                            <input type="email" class="form-control" placeholder="admin@district.in">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Add District</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN MANAGEMENT MODAL -->
+    <div class="modal fade" id="adminModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-users-cog"></i> Create District Admin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" placeholder="e.g., Rajesh Kumar">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" placeholder="admin@sgms.in">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" placeholder="+91 98765 43210">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Assign District</label>
+                            <select class="form-control">
+                                <option>-- Select District --</option>
+                                <option>Pune</option>
+                                <option>Nagpur</option>
+                                <option>Aurangabad</option>
+                            </select>
+                        </div>
+                        <div class="alert alert-info">
+                            Temporary password will be sent to the email. Admin must change it on first login.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Create Admin Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BACKUP MODAL -->
+    <div class="modal fade" id="backupModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-database"></i> Backup & Recovery</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Automatic backups are scheduled daily at 3:00 AM IST. You can also trigger manual backups anytime.
+                    </div>
+                    <h6 style="margin-bottom: 15px;">Trigger Manual Backup</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Backup Type</label>
+                        <select class="form-control">
+                            <option selected>Full Database Backup</option>
+                            <option>Incremental Backup</option>
+                            <option>Logs Only</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Backup Destination</label>
+                        <select class="form-control">
+                            <option selected>Local Storage</option>
+                            <option>AWS S3</option>
+                            <option>Google Cloud Storage</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="encrypt" checked>
+                            <label class="form-check-label" for="encrypt">Encrypt Backup</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Start Backup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGS MODAL -->
+    <div class="modal fade" id="logsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-server"></i> System Logs</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Log Type</label>
+                                <select class="form-control">
+                                    <option>All Logs</option>
+                                    <option>Login Events</option>
+                                    <option>Error Logs</option>
+                                    <option>Database Changes</option>
+                                    <option>System Events</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date Range</label>
+                                <input type="date" class="form-control">
+                            </div>
+                        </div>
+                    </form>
+                    <p style="color: #718096; text-align: center;">Detailed system logs interface...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIG MODAL -->
+    <div class="modal fade" id="configModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-cogs"></i> Platform Configuration</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <h6 style="margin-bottom: 15px;">Payment Gateway Settings</h6>
+                        <div class="mb-3">
+                            <label class="form-label">PhonePe API Key</label>
+                            <input type="password" class="form-control" placeholder="••••••••••••••••••••">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">PhonePe Merchant ID</label>
+                            <input type="text" class="form-control" placeholder="MERCHANT_ID">
+                        </div>
+                        <hr>
+                        <h6 style="margin-bottom: 15px;">External Services</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Weather API Key</label>
+                            <input type="password" class="form-control" placeholder="••••••••••••••••••••">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Google Maps API Key</label>
+                            <input type="password" class="form-control" placeholder="••••••••••••••••••••">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Save Configuration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<div class="container-fluid py-4 bg-dark text-white">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white p-3 shadow">
+                <h5>Total Requests</h5>
+                <h2>{{ requests_count }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-3 shadow">
+                <h5>Active Workers</h5>
+                <h2>{{ workers_count }}</h2>
+            </div>
+        </div>
+        <div class="col-md-12 mt-4">
+            <div class="card bg-secondary p-4">
+                <canvas id="businessAnalytics"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('businessAnalytics').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+            datasets: [{ label: 'Garbage Collected (Tons)', data: [12, 19, 3, 5, 2], borderColor: '#00d1b2' }]
+        }
+    });
+</script>
+{% endblock %}

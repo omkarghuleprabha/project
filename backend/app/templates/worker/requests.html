@@ -1,0 +1,29 @@
+<h2>Assigned Requests</h2>
+
+<table border="1">
+
+<tr>
+<th>ID</th>
+<th>Type</th>
+<th>Status</th>
+</tr>
+
+{% for r in data %}
+
+<tr>
+
+<td>{{r[0]}}</td>
+<td>{{r[4]}}</td>
+<td>{{r[6]}}</td>
+
+</tr>
+<td>
+
+<a href="/worker/weight/{{r[0]}}">
+Enter Weight
+</a>
+
+</td>
+{% endfor %}
+
+</table>

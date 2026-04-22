@@ -1,0 +1,75 @@
+{% extends "dashboard/citizen_base.html" %}
+
+{% block citizen_content %}
+<div class="section-title">
+    <i class="fas fa-truck"></i> Request Pickup
+</div>
+<div class="page-subtitle">Create a new pickup request and review your recent pickup records.</div>
+
+<div class="content-card">
+    <form action="{{ url_for('user_bp.pickup_request') }}" method="POST">
+        <input type="hidden" name="next" value="{{ url_for('auth_bp.citizen_pickup') }}">
+        <div class="mb-3">
+            <label class="form-label">Pickup Type</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="pickupType" id="doorToDoor" value="Door-to-Door" checked>
+                <label class="form-check-label" for="doorToDoor">Door-to-Door Collection</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="pickupType" id="bulk" value="Bulk">
+                <label class="form-check-label" for="bulk">Bulk Waste Pickup</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Waste Type</label>
+                <select name="wasteType" class="form-select">
+                    <option>Mixed Waste</option>
+                    <option>Wet Waste</option>
+                    <option>Dry Waste</option>
+                    <option>Construction Waste</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Preferred Date & Time</label>
+                <input type="datetime-local" name="scheduled_time" class="form-control" required>
+            </div>
+        </div>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Request Pickup</button>
+        </div>
+    </form>
+</div>
+
+<div class="section-title mt-4">
+    <i class="fas fa-clock-rotate-left"></i> Recent Pickup Requests
+</div>
+<div class="content-card">
+    {% if pickup_requests %}
+    <table class="mini-table">
+        <thead>
+            <tr>
+                <th>Request ID</th>
+                <th>Pickup Details</th>
+                <th>Status</th>
+                <th>Amount</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in pickup_requests %}
+            <tr>
+                <td>REQ-{{ "%04d"|format(req.id) }}</td>
+                <td>{{ req.garbage_type or 'Pickup request' }}</td>
+                <td>{{ req.status or 'pending' }}</td>
+                <td>Rs. {{ req.amount or 0 }}</td>
+                <td>{{ req.created_at.strftime('%d %b %Y %I:%M %p') if req.created_at else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">No pickup requests yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

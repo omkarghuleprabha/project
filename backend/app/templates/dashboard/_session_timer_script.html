@@ -1,0 +1,42 @@
+<script>
+(function () {
+    const timer = document.getElementById('sessionTimer');
+    if (!timer) {
+        return;
+    }
+
+    const display = timer.querySelector('[data-session-timer-value]');
+    const logoutUrl = timer.dataset.logoutUrl;
+    const expiryMs = Number(timer.dataset.expiry || 0) * 1000;
+
+    if (!display || !expiryMs) {
+        return;
+    }
+
+    function formatRemaining(totalSeconds) {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        if (hours > 0) {
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function updateTimer() {
+        const remainingSeconds = Math.max(0, Math.ceil((expiryMs - Date.now()) / 1000));
+        display.textContent = formatRemaining(remainingSeconds);
+        timer.classList.toggle('expiring', remainingSeconds <= 300);
+
+        if (remainingSeconds <= 0) {
+            window.location.replace(logoutUrl);
+        }
+    }
+
+    updateTimer();
+    const intervalId = window.setInterval(updateTimer, 1000);
+    window.addEventListener('pagehide', () => window.clearInterval(intervalId), { once: true });
+})();
+</script>

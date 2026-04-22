@@ -1,0 +1,203 @@
+{% extends "dashboard/worker_base.html" %}
+
+{% block worker_content %}
+
+<style>
+.qr-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.qr-header {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #374151;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.qr-content {
+    background: #1a1a2e;
+    border: 1px solid #374151;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.qr-code-container {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.qr-instructions {
+    color: #a0aec0;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.qr-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-generate {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.qr-info {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1.5rem;
+}
+
+.qr-info h5 {
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.qr-info p {
+    color: #a0aec0;
+    margin: 0;
+    font-size: 0.9rem;
+}
+</style>
+
+<div class="qr-container">
+    <!-- Header -->
+    <div class="qr-header">
+        <h1 style="color: #e2e8f0; margin-bottom: 0.5rem;">📱 QR Code Generator</h1>
+        <p style="color: #a0aec0; margin: 0;">Generate QR codes for task verification</p>
+    </div>
+
+    <!-- QR Content -->
+    <div class="qr-content">
+        <div class="qr-instructions">
+            <p>Generate a QR code to verify task completion. This QR code can be scanned by supervisors or used for digital verification of your work.</p>
+        </div>
+
+        <div id="qrCodeContainer" class="qr-code-container" style="display: none;">
+            <!-- QR Code will be generated here -->
+        </div>
+
+        <div class="qr-actions">
+            <button class="btn-generate" onclick="generateQR()">
+                <i class="fas fa-qrcode"></i> Generate QR Code
+            </button>
+            <button class="btn-download" onclick="downloadQR()" id="downloadBtn" style="display: none;">
+                <i class="fas fa-download"></i> Download QR
+            </button>
+        </div>
+
+        <div class="qr-info">
+            <h5><i class="fas fa-info-circle"></i> How it works</h5>
+            <p>The QR code contains encrypted information about your current task and timestamp. Scanning this code verifies that the task was completed at the specified location and time.</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block worker_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+<script>
+let currentQRCode = null;
+
+function generateQR() {
+    const container = document.getElementById('qrCodeContainer');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // Clear existing QR code
+    container.innerHTML = '';
+    container.style.display = 'none';
+    downloadBtn.style.display = 'none';
+
+    // Generate QR data (you can customize this based on current task/session)
+    const qrData = {
+        worker_id: {{ session.get('worker_id', 'null') }},
+        timestamp: new Date().toISOString(),
+        action: 'task_verification',
+        task_id: 'current_task' // Replace with actual task ID
+    };
+
+    const qrString = JSON.stringify(qrData);
+
+    // Generate QR code
+    QRCode.toCanvas(container, qrString, {
+        width: 256,
+        height: 256,
+        color: {
+            dark: '#1a1a2e',
+            light: '#ffffff'
+        },
+        errorCorrectionLevel: 'M'
+    }, function (error) {
+        if (error) {
+            console.error('Error generating QR code:', error);
+            alert('Error generating QR code. Please try again.');
+        } else {
+            container.style.display = 'block';
+            downloadBtn.style.display = 'inline-block';
+            currentQRCode = qrString;
+        }
+    });
+}
+
+function downloadQR() {
+    if (!currentQRCode) {
+        alert('Please generate a QR code first.');
+        return;
+    }
+
+    const canvas = document.querySelector('#qrCodeContainer canvas');
+    if (!canvas) {
+        alert('QR code not found.');
+        return;
+    }
+
+    // Create download link
+    const link = document.createElement('a');
+    link.download = `task_qr_${new Date().toISOString().split('T')[0]}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+}
+</script>
+{% endblock %}

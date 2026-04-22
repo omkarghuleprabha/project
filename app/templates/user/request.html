@@ -1,0 +1,31 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg p-4 bg-dark text-white border-secondary">
+                <h3 class="text-success mb-4"><i class="bi bi-camera-fill me-2"></i>New Pickup Request</h3>
+                <form action="/user/new_request" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Pickup Area</label>
+                        <select name="area" class="form-select bg-black text-white border-secondary" required>
+                            <option value="Kothrud">Kothrud</option>
+                            <option value="Baner">Baner</option>
+                            <option value="Hinjewadi">Hinjewadi</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Upload Garbage Photo</label>
+                        <input type="file" name="photo" class="form-control bg-black text-white" accept="image/*" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description (Optional)</label>
+                        <textarea name="description" class="form-control bg-black text-white" rows="3" placeholder="e.g. Near the big tree..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 fw-bold py-2">Submit Request (₹150)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

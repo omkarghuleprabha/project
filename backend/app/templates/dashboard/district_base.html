@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>District Admin Dashboard | Smart Garbage Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #14213d;
+            --slate: #23395b;
+            --accent: #fca311;
+            --mint: #2a9d8f;
+            --rose: #e76f51;
+            --sky: #4ea8de;
+            --paper: #f7f7f2;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --border-soft: rgba(15, 23, 42, 0.06);
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(78, 168, 222, 0.16), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(252, 163, 17, 0.12), transparent 30%),
+                linear-gradient(135deg, #eef2f7 0%, #f9fafb 100%);
+            color: var(--ink);
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 292px;
+            height: 100vh;
+            padding: 24px 18px;
+            background: linear-gradient(180deg, var(--navy) 0%, #0b1324 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .brand-block {
+            padding: 10px 14px 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 22px;
+        }
+        .brand-block h3 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+        .brand-block p {
+            margin: 6px 0 0;
+            color: #9fb3d1;
+            font-size: 0.92rem;
+        }
+        .profile-panel {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 22px;
+        }
+        .role-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(78, 168, 222, 0.18);
+            color: #c8eeff;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .profile-panel h5 {
+            margin: 14px 0 6px;
+            font-weight: 700;
+        }
+        .profile-panel p {
+            margin: 0;
+            color: #c8d4e7;
+            font-size: 0.9rem;
+        }
+        .profile-meta {
+            margin-top: 14px;
+            display: grid;
+            gap: 8px;
+            font-size: 0.86rem;
+            color: #c8d4e7;
+        }
+        .profile-meta span {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #c9d4e5;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 14px;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover,
+        .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: translateX(2px);
+        }
+        .nav-link i {
+            width: 18px;
+            text-align: center;
+        }
+        .logout-link {
+            margin-top: 18px;
+            color: #ffb4a2;
+        }
+        .main {
+            margin-left: 292px;
+            padding: 28px;
+        }
+        .topbar {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-soft);
+            border-radius: 22px;
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+            box-shadow: 0 12px 30px rgba(20, 33, 61, 0.08);
+            margin-bottom: 24px;
+        }
+        .topbar h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+        .topbar p {
+            margin: 6px 0 0;
+            color: var(--muted);
+        }
+        .scope-pill {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(42, 157, 143, 0.12);
+            color: #166d64;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .flash-shell .alert {
+            border-radius: 16px;
+            margin-bottom: 18px;
+        }
+        .content-card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border-soft);
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: 0 12px 26px rgba(20, 33, 61, 0.06);
+            height: 100%;
+        }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .section-head h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+        .section-head p {
+            margin: 4px 0 0;
+            color: var(--muted);
+        }
+        .metric-card {
+            color: white;
+            border-radius: 22px;
+            padding: 22px;
+            min-height: 168px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(20, 33, 61, 0.12);
+        }
+        .metric-card::after {
+            content: "";
+            position: absolute;
+            inset: auto -22px -26px auto;
+            width: 110px;
+            height: 110px;
+            background: rgba(255, 255, 255, 0.13);
+            border-radius: 50%;
+        }
+        .metric-card .metric-icon {
+            font-size: 1.3rem;
+        }
+        .metric-card h4 {
+            margin: 14px 0 8px;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        .metric-card p,
+        .metric-card small {
+            margin: 0;
+            opacity: 0.92;
+        }
+        .bg-navy { background: linear-gradient(135deg, #14213d, #23395b); }
+        .bg-amber { background: linear-gradient(135deg, #fca311, #ffba49); color: #3b2b00; }
+        .bg-mint { background: linear-gradient(135deg, #2a9d8f, #52b69a); }
+        .bg-rose { background: linear-gradient(135deg, #e76f51, #f4a261); }
+        .bg-sky { background: linear-gradient(135deg, #4ea8de, #5390d9); }
+        .bg-slate { background: linear-gradient(135deg, #3a506b, #5c677d); }
+        .mini-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .mini-badge.pending { background: #fef3c7; color: #92400e; }
+        .mini-badge.assigned { background: #ede9fe; color: #6d28d9; }
+        .mini-badge.in_progress { background: #dbeafe; color: #1d4ed8; }
+        .mini-badge.completed { background: #dcfce7; color: #166534; }
+        .mini-badge.high,
+        .mini-badge.critical { background: #fee2e2; color: #b91c1c; }
+        .mini-badge.medium,
+        .mini-badge.attention { background: #fef3c7; color: #92400e; }
+        .mini-badge.low,
+        .mini-badge.good { background: #dbeafe; color: #1d4ed8; }
+        .mini-badge.excellent,
+        .mini-badge.active { background: #dcfce7; color: #166534; }
+        .mini-badge.on_leave { background: #fff7ed; color: #c2410c; }
+        .mini-badge.inactive { background: #e5e7eb; color: #374151; }
+        .table thead th {
+            border-bottom: none;
+            color: var(--muted);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .table > :not(caption) > * > * {
+            padding: 14px 10px;
+        }
+        .progress-shell {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-shell span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--sky), var(--mint));
+        }
+        .empty-note {
+            color: var(--muted);
+            text-align: center;
+            padding: 32px 14px;
+        }
+        .section-anchor {
+            scroll-margin-top: 90px;
+        }
+        @media (max-width: 991px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+            .main {
+                margin-left: 0;
+                padding: 18px;
+            }
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .scope-pill {
+                white-space: normal;
+            }
+        }
+        {% include "dashboard/_session_timer_styles.html" %}
+    </style>
+    {% block district_head %}{% endblock %}
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand-block">
+            <h3><i class="fas fa-shield-halved me-2"></i>SmartPro</h3>
+            <p>District command center</p>
+        </div>
+
+        <div class="profile-panel">
+            <div class="role-tag"><i class="fas fa-building-shield"></i> District Admin</div>
+            <h5>{{ district_profile.name if district_profile else session.get('user_name', 'District Admin') }}</h5>
+            <p>{{ district_profile.district_name if district_profile else 'District' }} operational oversight</p>
+            <div class="profile-meta">
+                <span><i class="fas fa-envelope"></i>{{ district_profile.email if district_profile and district_profile.email else 'Email not available' }}</span>
+                <span><i class="fas fa-phone"></i>{{ district_profile.phone if district_profile and district_profile.phone else 'Phone not available' }}</span>
+            </div>
+        </div>
+
+        <nav class="nav-group">
+            <a href="{{ url_for('auth_bp.district_dashboard') }}#overview" class="nav-link {% if district_page == 'dashboard' %}active{% endif %}" data-district-nav="overview">
+                <i class="fas fa-chart-pie"></i> Overview
+            </a>
+            <a href="{{ url_for('auth_bp.district_dashboard') }}#map" class="nav-link" data-district-nav="map">
+                <i class="fas fa-map-location-dot"></i> District Map
+            </a>
+            <a href="{{ url_for('auth_bp.district_dashboard') }}#performance" class="nav-link" data-district-nav="performance">
+                <i class="fas fa-ranking-star"></i> Performance
+            </a>
+            <a href="{{ url_for('auth_bp.district_dashboard') }}#escalations" class="nav-link" data-district-nav="escalations">
+                <i class="fas fa-file-circle-exclamation"></i> Escalations
+            </a>
+            <a href="{{ url_for('auth_bp.district_dashboard') }}#operations" class="nav-link" data-district-nav="operations">
+                <i class="fas fa-users-gear"></i> Operations
+            </a>
+            <a href="{{ url_for('auth_bp.district_talukas_page') }}" class="nav-link {% if district_page == 'talukas' %}active{% endif %}">
+                <i class="fas fa-map"></i> Talukas
+            </a>
+            <a href="{{ url_for('auth_bp.district_taluka_admins_page') }}" class="nav-link {% if district_page == 'taluka_admins' %}active{% endif %}">
+                <i class="fas fa-user-tie"></i> Taluka Admins
+            </a>
+            <a href="{{ url_for('auth_bp.district_dashboard') }}#revenue" class="nav-link" data-district-nav="revenue">
+                <i class="fas fa-wallet"></i> Revenue
+            </a>
+            <a href="{{ url_for('auth_bp.logout') }}" class="nav-link logout-link">
+                <i class="fas fa-right-from-bracket"></i> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <h1>{% block page_title %}District Dashboard{% endblock %}</h1>
+                <p>{% block page_subtitle %}Monitor service delivery, escalations, and performance across your district.{% endblock %}</p>
+            </div>
+            <div class="topbar-actions">
+                <div class="scope-pill">
+                    <i class="fas fa-location-crosshairs"></i>
+                    {{ district_profile.district_name if district_profile else 'District' }} Scope
+                </div>
+                {% include "dashboard/_session_timer.html" %}
+            </div>
+        </div>
+
+        <div class="flash-shell">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block district_content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    (function () {
+        const navLinks = Array.from(document.querySelectorAll('[data-district-nav]'));
+        const sections = navLinks
+            .map((link) => {
+                const id = link.getAttribute('data-district-nav');
+                return { link, node: id ? document.getElementById(id) : null };
+            })
+            .filter((item) => item.node);
+
+        if (!sections.length || typeof IntersectionObserver === 'undefined') {
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            const visible = entries
+                .filter((entry) => entry.isIntersecting)
+                .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+
+            if (!visible) {
+                return;
+            }
+
+            sections.forEach((section) => {
+                section.link.classList.toggle('active', section.node === visible.target);
+            });
+        }, {
+            threshold: [0.2, 0.45, 0.7],
+            rootMargin: '-10% 0px -55% 0px',
+        });
+
+        sections.forEach((section) => observer.observe(section.node));
+    })();
+    </script>
+    {% include "dashboard/_session_timer_script.html" %}
+    {% block district_scripts %}{% endblock %}
+</body>
+</html>

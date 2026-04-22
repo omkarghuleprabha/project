@@ -1,0 +1,53 @@
+.session-timer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    min-width: 170px;
+    padding: 0.8rem 1rem;
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+.session-timer-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+.session-timer-value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+}
+.session-timer.expiring {
+    background: #fff7ed;
+    border-color: rgba(249, 115, 22, 0.3);
+}
+.session-timer.expiring .session-timer-label,
+.session-timer.expiring .session-timer-value {
+    color: #c2410c;
+}
+.topbar-actions,
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+}
+@media (max-width: 991px) {
+    .topbar-actions,
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .session-timer {
+        width: 100%;
+    }
+}

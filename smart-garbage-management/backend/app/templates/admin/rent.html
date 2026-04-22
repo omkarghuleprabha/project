@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card bg-dark text-white p-5 mx-auto" style="max-width: 500px;">
+    <h4 class="text-warning">Set Rent for: {{ worker[1] }}</h4>
+    <hr class="border-secondary">
+    <form action="/admin/rent/{{ worker[0] }}" method="POST">
+        <div class="mb-3">
+            <label>Rent Type</label>
+            <select name="rent_type" class="form-select bg-black text-white border-secondary">
+                <option value="monthly">Monthly</option>
+                <option value="per_trip">Per Trip</option>
+                <option value="daily">Daily</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label>Rent Amount (₹)</label>
+            <input type="number" name="rent_amount" class="form-control bg-black text-white" placeholder="e.g. 500">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Save Configuration</button>
+    </form>
+</div>
+{% endblock %}

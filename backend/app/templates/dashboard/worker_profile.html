@@ -1,0 +1,82 @@
+{% extends "dashboard/worker_base.html" %}
+
+{% block worker_content %}
+<div class="content-shell">
+    <div class="page-heading">
+        <div>
+            <h2>Profile</h2>
+            <p>View your personal information and work summary.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="info-card">
+                <h5>Personal Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value">{{ worker_profile.name if worker_profile else 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Worker ID</div>
+                        <div class="info-value">#{{ worker_profile.id if worker_profile else 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ worker_profile.email if worker_profile else 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value">{{ worker_profile.phone if worker_profile else 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Assigned Village</div>
+                        <div class="info-value">{{ worker_profile.village_name if worker_profile else 'Not assigned' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Vehicle Number</div>
+                        <div class="info-value">{{ worker_profile.vehicle_no if worker_profile and worker_profile.vehicle_no else 'Not assigned' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Current Status</div>
+                        <div class="info-value">
+                            <span class="badge-soft {{ (worker_profile.status if worker_profile else 'Inactive')|replace(' ', '_')|lower }}">
+                                {{ worker_profile.status if worker_profile else 'Inactive' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Member Since</div>
+                        <div class="info-value">{{ worker_profile.created_at.strftime('%d %b %Y') if worker_profile and worker_profile.created_at else 'N/A' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="info-card">
+                <h5>Work Summary</h5>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="info-label">Total Tasks</div>
+                        <div class="info-value">{{ profile_stats.total_tasks or 0 }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">Pending</div>
+                        <div class="info-value">{{ profile_stats.pending_tasks or 0 }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">In Progress</div>
+                        <div class="info-value">{{ profile_stats.in_progress_tasks or 0 }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">Completed</div>
+                        <div class="info-value">{{ profile_stats.completed_tasks or 0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

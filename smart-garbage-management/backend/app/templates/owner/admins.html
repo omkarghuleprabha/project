@@ -1,0 +1,30 @@
+<h2>Pending Admins</h2>
+
+<table border="1">
+
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Action</th>
+</tr>
+
+{% for a in admins %}
+
+<tr>
+
+<td>{{a[1]}}</td>
+<td>{{a[2]}}</td>
+
+<td>
+
+<a href="/owner/approve/{{a[0]}}">Approve</a>
+
+<a href="/owner/reject/{{a[0]}}">Reject</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>

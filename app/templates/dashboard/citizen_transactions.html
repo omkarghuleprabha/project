@@ -1,0 +1,43 @@
+{% extends "dashboard/citizen_base.html" %}
+
+{% block citizen_content %}
+<div class="section-title">
+    <i class="fas fa-receipt"></i> Transaction History
+</div>
+<div class="page-subtitle">Detailed payment records with total and share distribution.</div>
+
+<div class="content-card">
+    {% if payments %}
+    <table class="mini-table">
+        <thead>
+            <tr>
+                <th>Payment ID</th>
+                <th>Request ID</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Owner Share</th>
+                <th>Admin Share</th>
+                <th>Worker Share</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>PAY-{{ "%04d"|format(payment.id) }}</td>
+                <td>{{ 'REQ-' ~ "%04d"|format(payment.request_id) if payment.request_id else 'N/A' }}</td>
+                <td>{{ payment.garbage_type or 'Manual UPI Payment' }}</td>
+                <td>Rs. {{ payment.total or 0 }}</td>
+                <td>Rs. {{ payment.owner_share or 0 }}</td>
+                <td>Rs. {{ payment.admin_share or 0 }}</td>
+                <td>Rs. {{ payment.worker_share or 0 }}</td>
+                <td>{{ payment.created_at.strftime('%d %b %Y %I:%M %p') if payment.created_at else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">No payment transactions yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

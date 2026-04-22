@@ -1,0 +1,87 @@
+{% extends "dashboard/citizen_base.html" %}
+
+{% block citizen_content %}
+<div class="section-title">
+    <i class="fas fa-dashboard"></i> Dashboard
+</div>
+<div class="page-subtitle">Your quick overview of complaints, pickups, payments, and account activity.</div>
+
+<div class="row">
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+            <i class="fas fa-file-alt stat-icon"></i>
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">Total Complaints</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card pending">
+            <i class="fas fa-clock stat-icon" style="color: #f39c12;"></i>
+            <div class="stat-number">{{ stats.pending }}</div>
+            <div class="stat-label">Pending</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card in-progress">
+            <i class="fas fa-spinner stat-icon"></i>
+            <div class="stat-number">{{ stats.in_progress }}</div>
+            <div class="stat-label">In Progress</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card completed">
+            <i class="fas fa-check-circle stat-icon" style="color: #27ae60;"></i>
+            <div class="stat-number">{{ stats.completed }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4 mb-3">
+        <div class="action-card">
+            <i class="fas fa-plus-circle"></i>
+            <h5>File New Complaint</h5>
+            <p>Report a garbage issue with photo and location details.</p>
+            <a href="{{ url_for('auth_bp.citizen_file_complaint') }}" class="btn btn-primary btn-sm">Open Page</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="action-card">
+            <i class="fas fa-truck"></i>
+            <h5>Request Pickup</h5>
+            <p>Schedule a door-to-door or bulk pickup and track the request.</p>
+            <a href="{{ url_for('auth_bp.citizen_pickup') }}" class="btn btn-primary btn-sm">Open Page</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="action-card">
+            <i class="fas fa-credit-card"></i>
+            <h5>Payments</h5>
+            <p>Pay fees, review recent payments, and check transaction records.</p>
+            <a href="{{ url_for('auth_bp.citizen_payments') }}" class="btn btn-primary btn-sm">Open Page</a>
+        </div>
+    </div>
+</div>
+
+<div class="section-title mt-4">
+    <i class="fas fa-list"></i> Recent Complaints
+</div>
+{% for comp in recent_complaints %}
+<div class="complaint-item {{ comp.status_class }}">
+    <div class="complaint-header">
+        <h6>#{{ comp.ticket_id }} | {{ comp.title }}</h6>
+        <span class="status-badge {{ comp.status_class }}">{{ comp.status_text }}</span>
+    </div>
+    <p style="margin: 10px 0; color: #7f8c8d; font-size: 14px;">Location: {{ comp.village }}, Taluka {{ comp.taluka }}</p>
+    <div class="progress mb-2">
+        <div class="progress-bar {{ comp.bar_color }}" style="width: {{ comp.progress }}%;">{{ comp.progress }}% Complete</div>
+    </div>
+    <small style="color: #7f8c8d;">Filed on: {{ comp.date }}</small>
+</div>
+{% else %}
+<div class="content-card">
+    <div class="empty-state">No complaints filed yet.</div>
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "dashboard/district_base.html" %}
+
+{% block page_title %}Taluka Admin Directory{% endblock %}
+{% block page_subtitle %}Browse all taluka admins inside {{ district_profile.district_name }} and open their operational details.{% endblock %}
+
+{% block district_content %}
+<div class="content-card">
+    <div class="section-head">
+        <div>
+            <h3>Taluka Admins</h3>
+            <p>Open any taluka admin to view profile, villages, workers, and district task history.</p>
+        </div>
+        <span class="mini-badge excellent">{{ district_taluka_admins|length }} admins</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Admin</th>
+                    <th>Taluka</th>
+                    <th>Villages</th>
+                    <th>Workers</th>
+                    <th>District Tasks</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for admin in district_taluka_admins %}
+                <tr>
+                    <td>
+                        <strong>{{ admin.name }}</strong><br>
+                        <small class="text-muted">{{ admin.email or 'Email not available' }}</small><br>
+                        <small class="text-muted">{{ admin.phone or 'Phone not available' }}</small>
+                    </td>
+                    <td>{{ admin.taluka_name }}</td>
+                    <td>{{ admin.villages }}</td>
+                    <td>{{ admin.workers }}</td>
+                    <td>{{ admin.completed_district_tasks }}/{{ admin.total_district_tasks }}</td>
+                    <td>
+                        <a href="{{ url_for('auth_bp.district_taluka_admin_detail', taluka_admin_id=admin.id) }}" class="btn btn-outline-dark btn-sm">View Details</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="empty-note">No taluka admins are assigned in this district yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

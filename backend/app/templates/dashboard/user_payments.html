@@ -1,0 +1,90 @@
+{% extends "dashboard/user_base.html" %}
+
+{% block user_title %}Payments{% endblock %}
+{% block user_subtitle %}Review recorded payments and submit new payment entries linked to your requests.{% endblock %}
+
+{% block user_content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="info-card">
+            <div class="info-label">Total Paid</div>
+            <div class="info-value fs-4">₹{{ total_paid }}</div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="info-card">
+            <div class="info-label">Pending Request Value</div>
+            <div class="info-value fs-4">₹{{ pending_due }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="content-shell">
+    <div class="page-heading">
+        <div>
+            <h2>Payment History</h2>
+            <p>These entries are loaded from the `payments` table.</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+            <i class="fas fa-plus me-2"></i>Record Payment
+        </button>
+    </div>
+
+    <div class="table-shell">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Request</th>
+                        <th>Total</th>
+                        <th>Owner Share</th>
+                        <th>Admin Share</th>
+                        <th>Worker Share</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payment_history %}
+                    <tr>
+                        <td>#{{ payment.id }}</td>
+                        <td>{% if payment.request_id %}#{{ payment.request_id }} - {{ payment.garbage_type }}{% else %}General Payment{% endif %}</td>
+                        <td>₹{{ payment.total }}</td>
+                        <td>₹{{ payment.owner_share }}</td>
+                        <td>₹{{ payment.admin_share }}</td>
+                        <td>₹{{ payment.worker_share }}</td>
+                        <td>{{ payment.created_at.strftime('%d %b %Y %I:%M %p') if payment.created_at else 'N/A' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-center py-4 text-muted">No payments recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('user_bp.process_dashboard_payment') }}" method="POST">
+                    <select name="request_id" class="form-control mb-3">
+                        <option value="">Select related request (optional)</option>
+                        {% for order in user_requests %}
+                        <option value="{{ order.id }}">#{{ order.id }} - {{ order.garbage_type }} - ₹{{ order.amount }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" name="amount" class="form-control" placeholder="Amount in ₹" value="500">
+                    <button type="submit" name="gateway" value="phonepe" class="btn btn-primary mt-3 w-100">Pay with PhonePe</button>
+                    <button type="submit" name="gateway" value="gpay" class="btn btn-success mt-2 w-100">Pay with Google Pay</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

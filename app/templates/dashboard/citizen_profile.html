@@ -1,0 +1,41 @@
+{% extends "dashboard/citizen_base.html" %}
+
+{% block citizen_content %}
+<div class="section-title">
+    <i class="fas fa-user-circle"></i> Profile
+</div>
+<div class="page-subtitle">Your stored account and location details.</div>
+
+<div class="content-card">
+    <div class="profile-grid">
+        <div class="profile-item">
+            <small>Full Name</small>
+            <strong>{{ user_profile.name or session['user_name'] }}</strong>
+        </div>
+        <div class="profile-item">
+            <small>Email</small>
+            <strong>{{ user_profile.email or session['email'] }}</strong>
+        </div>
+        <div class="profile-item">
+            <small>Phone</small>
+            <strong>{{ user_profile.phone or 'Not Available' }}</strong>
+        </div>
+        <div class="profile-item">
+            <small>District ID</small>
+            <strong>{{ user_profile.district_id or 'Not Set' }}</strong>
+        </div>
+        <div class="profile-item">
+            <small>Taluka ID</small>
+            <strong>{{ user_profile.taluka_id or 'Not Set' }}</strong>
+        </div>
+        <div class="profile-item">
+            <small>Village ID</small>
+            <strong>{{ user_profile.village_id or 'Not Set' }}</strong>
+        </div>
+        <div class="profile-item">
+            <small>Joined</small>
+            <strong>{{ user_profile.created_at.strftime('%d %b %Y %I:%M %p') if user_profile.created_at else 'N/A' }}</strong>
+        </div>
+    </div>
+</div>
+{% endblock %}

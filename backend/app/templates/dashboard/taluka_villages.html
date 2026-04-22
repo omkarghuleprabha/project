@@ -1,0 +1,45 @@
+{% extends "dashboard/taluka_base.html" %}
+
+{% block page_title %}Village Coverage{% endblock %}
+{% block page_subtitle %}Village-by-village service footprint inside {{ admin_profile.taluka_name }}.{% endblock %}
+
+{% block taluka_content %}
+<div class="row g-4">
+    {% for village in villages %}
+    {% set total_requests = village.total_requests or 0 %}
+    {% set completed_requests = village.completed_requests or 0 %}
+    {% set progress = ((completed_requests / total_requests) * 100)|round if total_requests else 0 %}
+    <div class="col-md-6 col-xl-4">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>{{ village.name }}</h3>
+                    <p>{{ village.citizens or 0 }} citizens, {{ village.workers or 0 }} workers</p>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>Total Requests</span>
+                <strong>{{ total_requests }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>Completed Requests</span>
+                <strong>{{ completed_requests }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>Coverage Progress</span>
+                <strong>{{ progress }}%</strong>
+            </div>
+            <div class="progress-shell mt-3">
+                <span style="width: {{ progress }}%;"></span>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="content-card">
+            <div class="empty-note">No villages are linked to this taluka yet.</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

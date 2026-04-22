@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Dashboard - Smart Garbage Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
+    <style>
+        /* Your original styles remain unchanged */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%); min-height: 100vh; padding: 20px 0; position: fixed; width: 250px; left: 0; top: 0; color: white; overflow-y: auto; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3); }
+        .sidebar .logo { padding: 20px; text-align: center; border-bottom: 2px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
+        .sidebar .logo h4 { margin: 0; color: #3498db; font-weight: 700; }
+        .sidebar .logo p { margin: 5px 0 0 0; font-size: 0.85rem; color: #bdc3c7; }
+        .sidebar .user-info { padding: 15px 20px; background: rgba(255, 255, 255, 0.1); margin-bottom: 20px; border-radius: 8px; margin: 0 10px 20px 10px; }
+        .sidebar .user-info .user-avatar { width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin-bottom: 10px; }
+        .sidebar .user-info .user-name { font-weight: 600; margin: 10px 0 5px 0; }
+        .sidebar .user-info .user-email { font-size: 0.85rem; color: #bdc3c7; }
+        .sidebar .menu { list-style: none; }
+        .sidebar .menu a { display: flex; align-items: center; padding: 15px 20px; color: #ecf0f1; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; }
+        .sidebar .menu a:hover, .sidebar .menu a.active { background: rgba(52, 152, 219, 0.2); color: #3498db; border-left-color: #3498db; }
+        .sidebar .menu i { width: 25px; margin-right: 15px; text-align: center; }
+        .sidebar .logout-btn { position: absolute; bottom: 20px; left: 0; right: 0; padding: 15px 20px; background: #e74c3c; color: white; border: none; cursor: pointer; width: 100%; transition: background 0.3s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        .sidebar .logout-btn:hover { background: #c0392b; }
+        .main-content { margin-left: 250px; padding: 30px; }
+        .navbar-top { background: white; padding: 15px 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .navbar-top .search-box { flex: 1; max-width: 400px; }
+        .navbar-top .search-box input { border: 2px solid #e0e0e0; border-radius: 25px; padding: 10px 20px; width: 100%; }
+        .navbar-top .right-section { display: flex; gap: 20px; align-items: center; }
+        .stat-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-bottom: 20px; transition: transform 0.3s ease, box-shadow 0.3s ease; border-top: 4px solid #3498db; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15); }
+        .stat-card.pending { border-top-color: #f39c12; }
+        .stat-card.in-progress { border-top-color: #3498db; }
+        .stat-card.completed { border-top-color: #27ae60; }
+        .stat-card .stat-icon { font-size: 32px; margin-bottom: 10px; width: 60px; height: 60px; background: rgba(52, 152, 219, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .stat-card .stat-number { font-size: 28px; font-weight: 700; color: #2c3e50; margin: 10px 0; }
+        .stat-card .stat-label { color: #7f8c8d; font-size: 14px; }
+        .action-card { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-bottom: 20px; text-align: center; }
+        .action-card i { font-size: 48px; color: #3498db; margin-bottom: 15px; }
+        .action-card h5 { margin-bottom: 10px; color: #2c3e50; }
+        .action-card p { color: #7f8c8d; font-size: 14px; margin-bottom: 15px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 25px; padding: 10px 30px; font-weight: 600; transition: transform 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .complaint-item { background: white; border-radius: 10px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); border-left: 4px solid #3498db; }
+        .complaint-item.pending { border-left-color: #f39c12; }
+        .complaint-item.in-progress { border-left-color: #3498db; }
+        .complaint-item.completed { border-left-color: #27ae60; }
+        .complaint-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .complaint-header h6 { margin: 0; color: #2c3e50; }
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-badge.pending { background: #fff3cd; color: #856404; }
+        .status-badge.in-progress { background: #cfe2ff; color: #084298; }
+        .status-badge.completed { background: #d1e7dd; color: #0f5132; }
+        .progress-bar-wrapper { margin: 15px 0; }
+        .progress { height: 25px; border-radius: 15px; background: #ecf0f1; }
+        .progress-bar { border-radius: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .section-title { color: white; font-size: 28px; font-weight: 700; margin-bottom: 30px; display: flex; align-items: center; gap: 15px; }
+        .modal-content { border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
+        .modal-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0; }
+        .modal-header .btn-close { filter: brightness(0) invert(1); }
+        .form-control { border: 2px solid #e0e0e0; border-radius: 8px; padding: 12px 15px; }
+        .rating-stars { font-size: 24px; color: #f39c12; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar .logo h4, .sidebar .logo p, .sidebar .user-info, .sidebar .menu a span { display: none; }
+            .main-content { margin-left: 70px; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <h4><i class="fas fa-trash-alt"></i> SGMS</h4>
+            <p>Smart Garbage System</p>
+        </div>
+
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="user-name">{{ session['user_name'] }}</div>
+            <div class="user-email">{{ session['email'] }}</div>
+        </div>
+
+        <ul class="menu">
+            <li><a href="#" class="active"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#fileComplaintModal"><i class="fas fa-file-alt"></i> <span>File Complaint</span></a></li>
+            <li><a href="#"><i class="fas fa-list-check"></i> <span>My Complaints</span></a></li>
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#pickupModal"><i class="fas fa-truck"></i> <span>Request Pickup</span></a></li>
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#paymentModal"><i class="fas fa-credit-card"></i> <span>Payments</span></a></li>
+            <li><a href="#"><i class="fas fa-receipt"></i> <span>Transaction History</span></a></li>
+            <li><a href="#"><i class="fas fa-user-circle"></i> <span>Profile</span></a></li>
+        </ul>
+
+        <a href="{{ url_for('auth_bp.logout') }}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> &nbsp; Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="navbar-top">
+            <div class="search-box">
+                <input type="text" placeholder="Search complaints..." class="form-control">
+            </div>
+            <div class="right-section">
+                <button class="btn btn-light"><i class="fas fa-bell"></i> <span class="badge bg-danger">3</span></button>
+                <button class="btn btn-light"><i class="fas fa-envelope"></i></button>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <i class="fas fa-dashboard"></i> Dashboard Overview
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-file-alt stat-icon"></i>
+                    <div class="stat-number">{{ stats.total }}</div>
+                    <div class="stat-label">Total Complaints</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card pending">
+                    <i class="fas fa-clock stat-icon" style="color: #f39c12;"></i>
+                    <div class="stat-number">{{ stats.pending }}</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card in-progress">
+                    <i class="fas fa-spinner stat-icon"></i>
+                    <div class="stat-number">{{ stats.in_progress }}</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card completed">
+                    <i class="fas fa-check-circle stat-icon" style="color: #27ae60;"></i>
+                    <div class="stat-number">{{ stats.completed }}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 40px;">
+            <div class="col-md-4">
+                <div class="action-card">
+                    <i class="fas fa-plus-circle"></i>
+                    <h5>File New Complaint</h5>
+                    <p>Report garbage issue with photos and location</p>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#fileComplaintModal">Start Now</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="action-card">
+                    <i class="fas fa-truck"></i>
+                    <h5>Request Bulk Pickup</h5>
+                    <p>Schedule a door-to-door or bulk waste pickup</p>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#pickupModal">Request Pickup</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="action-card">
+                    <i class="fas fa-credit-card"></i>
+                    <h5>Pay Fees Online</h5>
+                    <p>Make quick payments using PhonePe or Google Pay</p>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#paymentModal">Pay Now</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 40px;">
+            <i class="fas fa-list"></i> Your Recent Complaints
+        </div>
+        
+        {% for comp in recent_complaints %}
+        <div class="complaint-item {{ comp.status_class }}">
+            <div class="complaint-header">
+                <h6>#{{ comp.ticket_id }} | {{ comp.title }}</h6>
+                <span class="status-badge {{ comp.status_class }}">{{ comp.status_text }}</span>
+            </div>
+            <p style="margin: 10px 0; color: #7f8c8d; font-size: 14px;">Location: {{ comp.village }}, Taluka {{ comp.taluka }}</p>
+            <div class="progress-bar-wrapper">
+                <div class="progress">
+                    <div class="progress-bar {{ comp.bar_color }}" style="width: {{ comp.progress }}%;">{{ comp.progress }}% Complete</div>
+                </div>
+            </div>
+            <small style="color: #7f8c8d;">Filed on: {{ comp.date }}</small>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="modal fade" id="fileComplaintModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-alt"></i> File New Complaint</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/complaint/add" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">Complaint Title</label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g., Garbage Accumulation" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Describe the issue in detail..." required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">District</label>
+                                <select name="district" id="districtSelect" class="form-control" required>
+                                    <option value="">Select District</option>
+                                    <option value="Pune">Pune</option>
+                                    <option value="Ahmednagar">Ahmednagar</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Taluka</label>
+                                <select name="taluka" id="talukaSelect" class="form-control" required>
+                                    <option value="">Select Taluka</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label class="form-label">Village</label>
+                            <select name="village" id="villageSelect" class="form-control" required>
+                                <option value="">Select Village</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload Photo</label>
+                            <input type="file" name="garbage_img" class="form-control" accept="image/*" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Priority Level</label>
+                            <select name="priority" class="form-control">
+                                <option value="Normal">Normal</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer px-0 pb-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="pickupModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-truck"></i> Request Bulk Pickup</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/pickup/request" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Pickup Type</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="pickupType" id="doorToDoor" value="Door-to-Door" checked>
+                                <label class="form-check-label" for="doorToDoor">Door-to-Door Collection</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="pickupType" id="bulk" value="Bulk">
+                                <label class="form-check-label" for="bulk">Bulk Waste Pickup</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Waste Type</label>
+                            <select name="wasteType" class="form-control">
+                                <option>Mixed Waste</option>
+                                <option>Wet Waste</option>
+                                <option>Dry Waste</option>
+                                <option>Construction Waste</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Preferred Date & Time</label>
+                            <input type="datetime-local" name="scheduled_time" class="form-control" required>
+                        </div>
+                        <div class="modal-footer px-0 pb-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Request Pickup</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-credit-card"></i> Payment Gateway</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="payment-qr text-center">
+                        <h6>Scan to Pay via PhonePe/Google Pay</h6>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=municipality@okhdfcbank&tn=SmartGarbageFee" alt="QR Code">
+                        <hr>
+                        <form action="/payment/process" method="POST">
+                            <input type="number" name="amount" class="form-control" placeholder="Amount in ₹" value="500">
+                            <button type="submit" name="gateway" value="phonepe" class="btn btn-primary mt-3 w-100">Pay with PhonePe</button>
+                            <button type="submit" name="gateway" value="gpay" class="btn btn-success mt-2 w-100">Pay with Google Pay</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Star Rating Logic
+        document.querySelectorAll('.rating-stars i').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.getAttribute('data-rating');
+                document.querySelectorAll('.rating-stars i').forEach((s, index) => {
+                    index < rating ? s.classList.replace('far', 'fas') : s.classList.replace('fas', 'far');
+                });
+            });
+        });
+
+        // DYNAMIC SELECT LOGIC (Connecting to your API)
+        document.getElementById('districtSelect')?.addEventListener('change', async function() {
+            const district = this.value;
+            const res = await fetch(`/api/talukas/${district}`);
+            const talukas = await res.json();
+            const select = document.getElementById('talukaSelect');
+            select.innerHTML = '<option value="">Select Taluka</option>';
+            talukas.forEach(t => select.innerHTML += `<option value="${t}">${t}</option>`);
+        });
+
+        document.getElementById('talukaSelect')?.addEventListener('change', async function() {
+            const taluka = this.value;
+            const res = await fetch(`/api/villages/${taluka}`);
+            const villages = await res.json();
+            const select = document.getElementById('villageSelect');
+            select.innerHTML = '<option value="">Select Village</option>';
+            villages.forEach(v => select.innerHTML += `<option value="${v}">${v}</option>`);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+{% extends "dashboard/worker_base.html" %}
+
+{% block worker_content %}
+
+<style>
+.earnings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.earnings-header {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #374151;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.earnings-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: #1a1a2e;
+    border: 1px solid #374151;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.summary-card.total {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.summary-card.pending {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: white;
+}
+
+.summary-card.today {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+}
+
+.summary-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.summary-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.earnings-chart {
+    background: #1a1a2e;
+    border: 1px solid #374151;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.earnings-table {
+    background: #1a1a2e;
+    border: 1px solid #374151;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.earnings-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.earnings-table th,
+.earnings-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #374151;
+}
+
+.earnings-table th {
+    background: #0f3460;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.earnings-table tbody tr:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.amount-positive {
+    color: #48bb78;
+    font-weight: 600;
+}
+
+.date-column {
+    color: #a0aec0;
+}
+
+.tasks-column {
+    text-align: center;
+}
+</style>
+
+<div class="earnings-container">
+    <!-- Header -->
+    <div class="earnings-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <h1 style="color: #e2e8f0; margin-bottom: 0.5rem;">💰 Earnings Dashboard</h1>
+                    <p style="color: #a0aec0; margin: 0;">Track your earnings and payment history</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="earnings-summary">
+        <div class="summary-card total">
+            <div class="summary-value">₹{{ "%.2f"|format(total_earnings) }}</div>
+            <div class="summary-label">Total Earnings</div>
+        </div>
+
+        <div class="summary-card pending">
+            <div class="summary-value">₹{{ "%.2f"|format(pending_payments) }}</div>
+            <div class="summary-label">Pending Payments</div>
+        </div>
+
+        <div class="summary-card today">
+            <div class="summary-value">₹{{ "%.2f"|format(earnings_data[0].daily_earnings if earnings_data and earnings_data[0] else 0) }}</div>
+            <div class="summary-label">Today's Earnings</div>
+        </div>
+    </div>
+
+    <!-- Earnings Chart -->
+    <div class="earnings-chart">
+        <h3 style="color: #e2e8f0; margin-bottom: 1.5rem;">📈 Earnings Trend (Last 30 Days)</h3>
+        <canvas id="earningsChart" style="max-height: 300px;"></canvas>
+    </div>
+
+    <!-- Earnings Table -->
+    <div class="earnings-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Tasks Completed</th>
+                    <th>Earnings</th>
+                    <th>Average per Task</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for earning in earnings_data %}
+                <tr>
+                    <td class="date-column">{{ earning.date.strftime('%d %b %Y') if earning.date else 'N/A' }}</td>
+                    <td class="tasks-column">{{ earning.tasks_completed }}</td>
+                    <td class="amount-positive">₹{{ "%.2f"|format(earning.daily_earnings) }}</td>
+                    <td>₹{{ "%.2f"|format(earning.daily_earnings / earning.tasks_completed) if earning.tasks_completed > 0 else '0.00' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: #a0aec0; padding: 2rem;">
+                        No earnings data available
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block worker_scripts %}
+<script id="earnings-data" type="application/json">{{ earnings_data|tojson }}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rawEarningsData = document.getElementById('earnings-data')?.textContent || '[]';
+    let earningsData = [];
+
+    try {
+        earningsData = JSON.parse(rawEarningsData);
+    } catch (error) {
+        console.error('Invalid earnings data JSON:', error);
+        earningsData = [];
+    }
+
+    if (!Array.isArray(earningsData) || earningsData.length === 0) {
+        console.log('No earnings data available');
+        return;
+    }
+
+    const reversedData = earningsData.slice().reverse();
+
+    const labels = reversedData.map(item => {
+        try {
+            const date = new Date(item.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } catch (e) {
+            console.error('Error parsing date:', item.date, e);
+            return 'N/A';
+        }
+    });
+
+    const earnings = reversedData.map(item => {
+        const value = parseFloat(item.daily_earnings || 0);
+        return Number.isFinite(value) ? value : 0;
+    });
+
+    const ctx = document.getElementById('earningsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Daily Earnings (₹)',
+                data: earnings,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#a0aec0',
+                        callback: function(value) {
+                            return '₹' + value;
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#a0aec0'
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

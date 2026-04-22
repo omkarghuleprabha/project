@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card bg-dark text-white p-4">
+    <h4>Assign Task (Request ID: #{{ req_id }})</h4>
+    <form action="/admin/assign/{{ req_id }}" method="POST" class="mt-4">
+        <div class="mb-3">
+            <label>Select Available Worker</label>
+            <select name="worker" class="form-select bg-black text-white border-secondary">
+                {% for w in workers %}
+                <option value="{{ w[0] }}">{{ w[1] }} ({{ w[5] }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Deploy Worker Now 🚀</button>
+    </form>
+</div>
+{% endblock %}

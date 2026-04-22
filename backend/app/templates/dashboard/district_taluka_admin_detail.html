@@ -1,0 +1,174 @@
+{% extends "dashboard/district_base.html" %}
+
+{% block page_title %}{{ taluka_admin.name }}{% endblock %}
+{% block page_subtitle %}Profile, villages, workers, and district task details for the taluka admin of {{ taluka_admin.taluka_name }}.{% endblock %}
+
+{% block district_content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Admin Profile</h3>
+                    <p>Taluka administrator details inside district scope.</p>
+                </div>
+                <a href="{{ url_for('auth_bp.district_taluka_admins_page') }}" class="btn btn-outline-dark btn-sm">Back to Admins</a>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Full Name</div>
+                    <div class="fw-bold fs-5">{{ taluka_admin.name }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Admin ID</div>
+                    <div class="fw-bold fs-5">#{{ taluka_admin.id }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Email</div>
+                    <div class="fw-bold">{{ taluka_admin.email or 'Email not available' }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Phone</div>
+                    <div class="fw-bold">{{ taluka_admin.phone or 'Phone not available' }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Taluka</div>
+                    <div class="fw-bold">{{ taluka_admin.taluka_name }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">District</div>
+                    <div class="fw-bold">{{ taluka_admin.district_name }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Member Since</div>
+                    <div class="fw-bold">{{ taluka_admin.created_at.strftime('%d %b %Y') if taluka_admin.created_at else 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Taluka Scope</h3>
+                    <p>Operational footprint managed by this taluka admin.</p>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Villages</span><strong>{{ dashboard_stats.villages }}</strong></div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Workers</span><strong>{{ dashboard_stats.workers }}</strong></div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Citizens</span><strong>{{ dashboard_stats.citizens }}</strong></div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Total Complaints</span><strong>{{ dashboard_stats.complaints_total }}</strong></div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Service Requests</span><strong>{{ dashboard_stats.requests_total }}</strong></div>
+            <div class="d-flex justify-content-between py-2"><span>Completed Value</span><strong>Rs {{ "{:,.0f}".format(dashboard_stats.completed_value or 0) }}</strong></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-6">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Villages</h3>
+                    <p>Villages under {{ taluka_admin.taluka_name }} administration.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Village</th>
+                            <th>Citizens</th>
+                            <th>Workers</th>
+                            <th>Requests</th>
+                            <th>Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for village in villages %}
+                        <tr>
+                            <td><strong>{{ village.name }}</strong></td>
+                            <td>{{ village.citizens or 0 }}</td>
+                            <td>{{ village.workers or 0 }}</td>
+                            <td>{{ village.completed_requests or 0 }}/{{ village.total_requests or 0 }}</td>
+                            <td>{{ village.progress or 0 }}%</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="empty-note">No villages are linked to this taluka yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Workers</h3>
+                    <p>Field workers assigned inside {{ taluka_admin.taluka_name }}.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Worker</th>
+                            <th>Village</th>
+                            <th>Status</th>
+                            <th>Tasks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for worker in workers %}
+                        <tr>
+                            <td><strong>{{ worker.name }}</strong><br><small class="text-muted">{{ worker.phone }}</small></td>
+                            <td>{{ worker.village_name or 'Not assigned' }}</td>
+                            <td><span class="mini-badge {{ worker.status|replace(' ', '_')|lower }}">{{ worker.status }}</span></td>
+                            <td>{{ worker.completed_tasks or 0 }} completed / {{ worker.total_tasks or 0 }} total</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="empty-note">No workers are assigned in this taluka yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="section-head">
+        <div>
+            <h3>District Tasks Assigned to This Taluka Admin</h3>
+            <p>Recent tasks pushed from the district office.</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Assigned On</th>
+                    <th>Completed On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in district_tasks %}
+                <tr>
+                    <td><strong>{{ task.location_name or task.taluka_name }}</strong><br><small class="text-muted">{{ task.description }}</small></td>
+                    <td><span class="mini-badge {{ task.priority_key }}">{{ task.priority|title }}</span></td>
+                    <td><span class="mini-badge {{ task.status }}">{{ task.status_label }}</span></td>
+                    <td>{{ task.assigned_at_text }}</td>
+                    <td>{{ task.completed_at_text }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="empty-note">No district tasks have been assigned to this taluka admin yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

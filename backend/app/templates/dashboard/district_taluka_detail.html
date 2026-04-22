@@ -1,0 +1,236 @@
+{% extends "dashboard/district_base.html" %}
+
+{% block page_title %}{{ taluka.name }} Overview{% endblock %}
+{% block page_subtitle %}District-level view of villages, workers, requests, and complaint coverage inside {{ taluka.name }}.{% endblock %}
+
+{% block district_head %}
+{{ super() }}
+<style>
+    .taluka-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .detail-card {
+        border-radius: 18px;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+        padding: 1rem;
+        background: linear-gradient(180deg, rgba(20, 33, 61, 0.03), rgba(20, 33, 61, 0.01));
+    }
+    .detail-card span {
+        color: var(--muted);
+        font-size: 0.82rem;
+    }
+    .detail-card strong {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 1.45rem;
+    }
+    .village-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    .village-box {
+        border-radius: 18px;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+        padding: 1rem;
+        background: white;
+        box-shadow: 0 10px 22px rgba(20, 33, 61, 0.05);
+    }
+    .village-box h4 {
+        margin: 0 0 0.3rem;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+    .metric-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 0.45rem;
+        color: var(--muted);
+        font-size: 0.84rem;
+    }
+    @media (max-width: 1199px) {
+        .taluka-detail-grid,
+        .village-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+    @media (max-width: 767px) {
+        .taluka-detail-grid,
+        .village-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block district_content %}
+<div class="content-card mb-4">
+    <div class="section-head">
+        <div>
+            <h3>{{ taluka.name }}</h3>
+            <p>
+                Taluka admin:
+                {% if taluka.admin_id %}
+                <a href="{{ url_for('auth_bp.district_taluka_admin_detail', taluka_admin_id=taluka.admin_id) }}">{{ taluka.admin_name }}</a>
+                {% else %}
+                Not assigned
+                {% endif %}
+            </p>
+        </div>
+        <a href="{{ url_for('auth_bp.district_talukas_page') }}" class="btn btn-outline-dark btn-sm">Back to Talukas</a>
+    </div>
+    <div class="taluka-detail-grid">
+        <div class="detail-card">
+            <span>Villages</span>
+            <strong>{{ dashboard_stats.villages }}</strong>
+        </div>
+        <div class="detail-card">
+            <span>Workers</span>
+            <strong>{{ dashboard_stats.workers }}</strong>
+        </div>
+        <div class="detail-card">
+            <span>Complaints</span>
+            <strong>{{ dashboard_stats.complaints_total }}</strong>
+        </div>
+        <div class="detail-card">
+            <span>Requests</span>
+            <strong>{{ dashboard_stats.requests_total }}</strong>
+        </div>
+    </div>
+</div>
+
+<div class="content-card mb-4">
+    <div class="section-head">
+        <div>
+            <h3>Villages in {{ taluka.name }}</h3>
+            <p>District view of village coverage, workers, and request progress.</p>
+        </div>
+    </div>
+    <div class="village-grid">
+        {% for village in villages %}
+        <div class="village-box">
+            <h4>{{ village.name }}</h4>
+            <div class="metric-row"><span>Citizens</span><strong>{{ village.citizens or 0 }}</strong></div>
+            <div class="metric-row"><span>Workers</span><strong>{{ village.workers or 0 }}</strong></div>
+            <div class="metric-row"><span>Requests</span><strong>{{ village.total_requests or 0 }}</strong></div>
+            <div class="metric-row"><span>Completed</span><strong>{{ village.completed_requests or 0 }}</strong></div>
+            <div class="metric-row"><span>Progress</span><strong>{{ village.progress or 0 }}%</strong></div>
+        </div>
+        {% else %}
+        <div class="empty-note">No villages are linked to this taluka yet.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="content-card mb-4">
+    <div class="section-head">
+        <div>
+            <h3>Workers in {{ taluka.name }}</h3>
+            <p>All field workers assigned across this taluka.</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Worker</th>
+                    <th>Village</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Tasks</th>
+                    <th>Completed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for worker in workers %}
+                <tr>
+                    <td><strong>{{ worker.name }}</strong><br><small class="text-muted">{{ worker.email }}</small></td>
+                    <td>{{ worker.village_name or 'Not assigned' }}</td>
+                    <td>{{ worker.phone }}</td>
+                    <td><span class="mini-badge {{ worker.status|replace(' ', '_')|lower }}">{{ worker.status }}</span></td>
+                    <td>{{ worker.active_tasks or 0 }} active / {{ worker.total_tasks or 0 }} total</td>
+                    <td>{{ worker.completed_tasks or 0 }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="empty-note">No workers are assigned in this taluka yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-6">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Recent Requests</h3>
+                    <p>Latest request activity inside {{ taluka.name }}.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Request</th>
+                            <th>Citizen</th>
+                            <th>Worker</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in recent_requests %}
+                        <tr>
+                            <td><strong>#{{ request.id }} {{ request.garbage_type }}</strong><br><small class="text-muted">{{ request.village_name }}</small></td>
+                            <td>{{ request.citizen_name }}</td>
+                            <td>{{ request.worker_name }}</td>
+                            <td><span class="mini-badge {{ request.status }}">{{ request.status|replace('_', ' ')|title }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="empty-note">No recent requests are available for this taluka.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Recent Manual Tasks</h3>
+                    <p>Latest field tasks assigned inside {{ taluka.name }}.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Worker</th>
+                            <th>Status</th>
+                            <th>Assigned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in assigned_tasks %}
+                        <tr>
+                            <td><strong>{{ task.location_name }}</strong><br><small class="text-muted">{{ task.description }}</small></td>
+                            <td>{{ task.worker_name }}</td>
+                            <td><span class="mini-badge {{ task.status }}">{{ task.status|replace('_', ' ')|title }}</span></td>
+                            <td>{{ task.assigned_at.strftime('%d %b %Y %I:%M %p') if task.assigned_at else 'N/A' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="empty-note">No manual tasks are available for this taluka.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

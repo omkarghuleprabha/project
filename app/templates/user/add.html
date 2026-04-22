@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Report a Complaint{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-trash-restore mr-2"></i> Report Garbage Issue</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('user_bp.add_complaint') }}" method="POST" enctype="multipart/form-data">
+                        
+                        <div class="form-group mb-3">
+                            <label for="description"><strong>Complaint Description</strong></label>
+                            <textarea name="description" id="description" class="form-control" rows="4" 
+                                placeholder="Describe the garbage issue (e.g., Overflowing bin, missed collection)..." required></textarea>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="location"><strong>Specific Landmark/Location</strong></label>
+                            <input type="text" name="location" id="location" class="form-control" 
+                                placeholder="Near Hanuman Temple, Main Road, etc." required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="category"><strong>Waste Category</strong></label>
+                                <select name="category" class="form-control">
+                                    <option value="dry">Dry Waste</option>
+                                    <option value="wet">Wet Waste</option>
+                                    <option value="hazardous">Hazardous/Medical</option>
+                                    <option value="construction">Debris/Construction</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="image"><strong>Upload Photo (Optional)</strong></label>
+                                <input type="file" name="image" class="form-control-file border p-1 w-100" accept="image/*">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('auth_bp.citizen_dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-success px-4">
+                                Submit Complaint <i class="fas fa-paper-plane ml-1"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

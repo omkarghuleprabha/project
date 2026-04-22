@@ -1,0 +1,50 @@
+{% extends "dashboard/worker_base.html" %}
+
+{% block worker_content %}
+<div class="content-shell">
+    <div class="page-heading">
+        <div>
+            <h2>Work History</h2>
+            <p>Review completed citizen requests and taluka-admin tasks.</p>
+        </div>
+    </div>
+
+    <div class="table-shell">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Task ID</th>
+                        <th>Source</th>
+                        <th>Assigned By</th>
+                        <th>Area</th>
+                        <th>Details</th>
+                        <th>Earned</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in history_items %}
+                    <tr>
+                        <td>#{{ item.ticket_id }}</td>
+                        <td>{{ item.source_label }}</td>
+                        <td>{{ item.citizen_name }}</td>
+                        <td>{{ item.area_name }}</td>
+                        <td>
+                            <strong>{{ item.garbage_type }}</strong><br>
+                            <small class="text-muted">Priority: {{ item.priority_label }}</small>
+                        </td>
+                        <td>{% if item.amount is not none %}₹{{ item.amount or 0 }}{% else %}<span class="text-muted">--</span>{% endif %}</td>
+                        <td>{{ item.created_at.strftime('%d %b %Y %I:%M %p') if item.created_at else 'N/A' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No completed task history yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

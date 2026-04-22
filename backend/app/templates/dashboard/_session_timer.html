@@ -1,0 +1,9 @@
+{% if session_expires_at_ts %}
+<div class="session-timer" id="sessionTimer" data-expiry="{{ session_expires_at_ts }}" data-logout-url="{{ url_for('auth_bp.logout', reason='expired') }}">
+    <span class="session-timer-label">
+        <i class="fas fa-hourglass-half"></i>
+        Session
+    </span>
+    <span class="session-timer-value" data-session-timer-value>{{ session_timeout_minutes }}:00</span>
+</div>
+{% endif %}

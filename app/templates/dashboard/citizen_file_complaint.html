@@ -1,0 +1,85 @@
+{% extends "dashboard/citizen_base.html" %}
+
+{% block citizen_content %}
+<div class="section-title">
+    <i class="fas fa-file-alt"></i> File Complaint
+</div>
+<div class="page-subtitle">Submit a new complaint with location, description, and photo.</div>
+
+<div class="content-card">
+    <form action="{{ url_for('user_bp.add_complaint') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="next" value="{{ url_for('auth_bp.citizen_file_complaint') }}">
+        <div class="mb-3">
+            <label class="form-label">Complaint Title</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g., Garbage Accumulation" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="4" placeholder="Describe the issue in detail..." required></textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">District</label>
+                <select name="district" id="districtSelect" class="form-select" required>
+                    <option value="">Select District</option>
+                    <option value="Pune">Pune</option>
+                    <option value="Ahmednagar">Ahmednagar</option>
+                    <option value="Satara">Satara</option>
+                    <option value="Kolhapur">Kolhapur</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Taluka</label>
+                <select name="taluka" id="talukaSelect" class="form-select" required>
+                    <option value="">Select Taluka</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Village</label>
+                <select name="village" id="villageSelect" class="form-select" required>
+                    <option value="">Select Village</option>
+                </select>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label class="form-label">Upload Photo</label>
+                <input type="file" name="garbage_img" class="form-control" accept="image/*" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Priority</label>
+                <select name="priority" class="form-select">
+                    <option value="Normal">Normal</option>
+                    <option value="High">High</option>
+                    <option value="Urgent">Urgent</option>
+                </select>
+            </div>
+        </div>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Submit Complaint</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block citizen_scripts %}
+<script>
+    document.getElementById('districtSelect')?.addEventListener('change', async function() {
+        const district = this.value;
+        const res = await fetch(`/api/talukas/${district}`);
+        const talukas = await res.json();
+        const select = document.getElementById('talukaSelect');
+        select.innerHTML = '<option value="">Select Taluka</option>';
+        talukas.forEach(t => select.innerHTML += `<option value="${t}">${t}</option>`);
+    });
+
+    document.getElementById('talukaSelect')?.addEventListener('change', async function() {
+        const taluka = this.value;
+        const res = await fetch(`/api/villages/${taluka}`);
+        const villages = await res.json();
+        const select = document.getElementById('villageSelect');
+        select.innerHTML = '<option value="">Select Village</option>';
+        villages.forEach(v => select.innerHTML += `<option value="${v}">${v}</option>`);
+    });
+</script>
+{% endblock %}

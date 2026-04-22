@@ -1,0 +1,31 @@
+{% extends "dashboard/citizen_base.html" %}
+
+{% block citizen_content %}
+<div class="section-title">
+    <i class="fas fa-list-check"></i> My Complaints
+</div>
+<div class="page-subtitle">Track all complaint records, status, priority, and filing date.</div>
+
+<div class="content-card mb-4">
+    <a href="{{ url_for('auth_bp.citizen_file_complaint') }}" class="btn btn-primary btn-sm">File Another Complaint</a>
+</div>
+
+{% for comp in complaints %}
+<div class="complaint-item {{ comp.status_class }}">
+    <div class="complaint-header">
+        <h6>#{{ comp.ticket_id }} | {{ comp.title }}</h6>
+        <span class="status-badge {{ comp.status_class }}">{{ comp.status_text }}</span>
+    </div>
+    <p class="mb-2 text-muted">District: {{ comp.district }} | Taluka: {{ comp.taluka }} | Village: {{ comp.village }}</p>
+    <p class="mb-2"><strong>Priority:</strong> {{ comp.priority }}</p>
+    <div class="progress mb-2">
+        <div class="progress-bar {{ comp.bar_color }}" style="width: {{ comp.progress }}%;">{{ comp.progress }}% Complete</div>
+    </div>
+    <small class="text-muted">Filed on: {{ comp.date }}</small>
+</div>
+{% else %}
+<div class="content-card">
+    <div class="empty-state">No complaint records available.</div>
+</div>
+{% endfor %}
+{% endblock %}

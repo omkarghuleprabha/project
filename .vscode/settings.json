@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd \"d:\\\\INTERSHIP\\\\mini project\\\\smart-garbage-management\\\\backend\" && python test_earnings\\.py$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

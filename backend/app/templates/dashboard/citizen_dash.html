@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Dashboard | Smart Garbage Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #14213d;
+            --slate: #23395b;
+            --accent: #fca311;
+            --mint: #2a9d8f;
+            --rose: #e76f51;
+            --sky: #4ea8de;
+            --paper: #f7f7f2;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --line: rgba(15, 23, 42, 0.08);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(252, 163, 17, 0.18), transparent 28%),
+                linear-gradient(135deg, #eef2f7 0%, #f9fafb 100%);
+            color: var(--ink);
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            padding: 24px 18px;
+            background: linear-gradient(180deg, var(--navy) 0%, #0b1324 100%);
+            color: #fff;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .brand-block {
+            padding: 10px 14px 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 22px;
+        }
+        .brand-block h3 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+        .brand-block p {
+            margin: 6px 0 0;
+            color: #9fb3d1;
+            font-size: 0.92rem;
+        }
+        .profile-panel {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 22px;
+        }
+        .role-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(42, 157, 143, 0.16);
+            color: #aef1e9;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .profile-panel h5 {
+            margin: 14px 0 6px;
+            font-weight: 700;
+        }
+        .profile-panel p {
+            margin: 0;
+            color: #c8d4e7;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #c9d4e5;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 14px;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover,
+        .nav-link.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: translateX(2px);
+        }
+        .nav-link i {
+            width: 18px;
+            text-align: center;
+        }
+        .logout-link {
+            margin-top: 18px;
+            color: #ffb4a2;
+        }
+        .main {
+            margin-left: 280px;
+            padding: 28px;
+        }
+        .topbar {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            border-radius: 22px;
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+            box-shadow: 0 12px 30px rgba(20, 33, 61, 0.08);
+            margin-bottom: 24px;
+        }
+        .topbar h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 800;
+        }
+        .topbar p {
+            margin: 6px 0 0;
+            color: var(--muted);
+        }
+        .scope-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(42, 157, 143, 0.12);
+            color: #166d64;
+            font-weight: 700;
+        }
+        .flash-shell .alert {
+            border-radius: 16px;
+            margin-bottom: 18px;
+        }
+        .content-card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: 0 12px 26px rgba(20, 33, 61, 0.06);
+            height: 100%;
+        }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .section-head h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+        .section-head p {
+            margin: 4px 0 0;
+            color: var(--muted);
+        }
+        .metric-card {
+            color: #fff;
+            border-radius: 22px;
+            padding: 22px;
+            min-height: 170px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(20, 33, 61, 0.12);
+        }
+        .metric-card::after {
+            content: "";
+            position: absolute;
+            inset: auto -22px -26px auto;
+            width: 110px;
+            height: 110px;
+            background: rgba(255, 255, 255, 0.13);
+            border-radius: 50%;
+        }
+        .metric-card .metric-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.14);
+            font-size: 1.1rem;
+        }
+        .metric-card h4 {
+            margin: 14px 0 8px;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        .metric-card p,
+        .metric-card small {
+            margin: 0;
+            opacity: 0.92;
+        }
+        .bg-navy {
+            background: linear-gradient(135deg, #14213d, #23395b);
+        }
+        .bg-amber {
+            background: linear-gradient(135deg, #fca311, #ffba49);
+            color: #3b2b00;
+        }
+        .bg-mint {
+            background: linear-gradient(135deg, #2a9d8f, #52b69a);
+        }
+        .bg-rose {
+            background: linear-gradient(135deg, #e76f51, #f4a261);
+        }
+        .quick-action {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+            text-align: left;
+        }
+        .quick-action-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            color: var(--navy);
+            background: linear-gradient(135deg, rgba(252, 163, 17, 0.2), rgba(78, 168, 222, 0.16));
+        }
+        .quick-action h4,
+        .ticket-card h5,
+        .ledger-card h5,
+        .profile-card h5 {
+            margin: 0;
+            font-weight: 800;
+        }
+        .quick-action p,
+        .ticket-card p,
+        .ledger-card p,
+        .profile-card p,
+        .empty-note {
+            color: var(--muted);
+            margin: 0;
+        }
+        .btn-theme {
+            background: linear-gradient(135deg, var(--accent), #ffba49);
+            border: none;
+            color: #2b2110;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 11px 18px;
+        }
+        .btn-theme:hover {
+            color: #2b2110;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(252, 163, 17, 0.25);
+        }
+        .btn-theme.btn-success-tone {
+            background: linear-gradient(135deg, var(--mint), #52b69a);
+            color: #fff;
+        }
+        .btn-theme.btn-success-tone:hover {
+            color: #fff;
+            box-shadow: 0 10px 22px rgba(42, 157, 143, 0.25);
+        }
+        .btn-soft {
+            border-radius: 999px;
+            padding: 11px 18px;
+            font-weight: 700;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--ink);
+        }
+        .ticket-list,
+        .ledger-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .ticket-card,
+        .ledger-card {
+            border: 1px solid var(--line);
+            border-left: 5px solid var(--sky);
+            border-radius: 18px;
+            padding: 18px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 247, 242, 0.95));
+        }
+        .ticket-card.pending,
+        .ledger-card.pending {
+            border-left-color: var(--accent);
+        }
+        .ticket-card.assigned,
+        .ledger-card.assigned {
+            border-left-color: #7c3aed;
+        }
+        .ticket-card.in-progress,
+        .ticket-card.in_progress,
+        .ledger-card.in-progress,
+        .ledger-card.in_progress {
+            border-left-color: var(--sky);
+        }
+        .ticket-card.completed,
+        .ledger-card.completed {
+            border-left-color: var(--mint);
+        }
+        .ticket-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .ticket-meta h5 {
+            font-size: 1rem;
+        }
+        .meta-line {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: 0.92rem;
+            margin-top: 10px;
+        }
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .status-chip.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-chip.assigned {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .status-chip.in-progress,
+        .status-chip.in_progress {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .status-chip.completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-chip.recorded {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .ticket-progress {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 14px;
+        }
+        .complaint-progress-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--sky), var(--mint));
+            display: block;
+            color: transparent;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .profile-item {
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: rgba(20, 33, 61, 0.04);
+            border: 1px solid rgba(20, 33, 61, 0.05);
+        }
+        .profile-item span {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .profile-item strong {
+            font-size: 1rem;
+            color: var(--ink);
+        }
+        .modal-content {
+            border-radius: 24px;
+            border: none;
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(20, 33, 61, 0.18);
+        }
+        .modal-header {
+            background: linear-gradient(135deg, var(--navy), var(--slate));
+            color: #fff;
+            border: none;
+            padding: 18px 22px;
+        }
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+        .modal-body {
+            padding: 22px;
+            background: #f9fafb;
+        }
+        .form-label {
+            font-weight: 700;
+            color: var(--ink);
+        }
+        .form-control,
+        .form-select {
+            border-radius: 14px;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            padding: 12px 14px;
+            box-shadow: none;
+        }
+        .form-control:focus,
+        .form-select:focus {
+            border-color: rgba(42, 157, 143, 0.5);
+            box-shadow: 0 0 0 0.2rem rgba(42, 157, 143, 0.15);
+        }
+        .form-check {
+            padding: 12px 14px 12px 2rem;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 14px;
+            background: #fff;
+            margin-bottom: 10px;
+        }
+        .payment-qr img {
+            width: 200px;
+            max-width: 100%;
+            border-radius: 18px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            padding: 10px;
+            background: #fff;
+        }
+        .session-timer {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            min-width: 170px;
+            padding: 0.8rem 1rem;
+            border-radius: 16px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        }
+        .session-timer-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+        .session-timer-value {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+            font-variant-numeric: tabular-nums;
+        }
+        .session-timer.expiring {
+            background: #fff7ed;
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+        .session-timer.expiring .session-timer-label,
+        .session-timer.expiring .session-timer-value {
+            color: #c2410c;
+        }
+        .topbar-actions,
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 991px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+            .main {
+                margin-left: 0;
+                padding: 18px;
+            }
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .topbar-actions,
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .session-timer {
+                width: 100%;
+            }
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% set citizen_name = user_profile.name if user_profile and user_profile.name else session.get('user_name', 'Citizen') %}
+    {% set citizen_email = user_profile.email if user_profile and user_profile.email else session.get('email', session.get('user_email', 'citizen@smartgarbage.local')) %}
+    {% set citizen_phone = user_profile.phone if user_profile and user_profile.phone else 'N/A' %}
+    {% set district_id = user_profile.district_id if user_profile and user_profile.district_id else 'N/A' %}
+    {% set taluka_id = user_profile.taluka_id if user_profile and user_profile.taluka_id else 'N/A' %}
+    {% set village_id = user_profile.village_id if user_profile and user_profile.village_id else 'N/A' %}
+    {% set citizen_id = user_profile.id if user_profile and user_profile.id else session.get('user_id', 'N/A') %}
+    {% set member_since = user_profile.created_at.strftime('%d %b %Y') if user_profile and user_profile.created_at else 'N/A' %}
+
+    <aside class="sidebar">
+        <div class="brand-block">
+            <h3><i class="fas fa-recycle me-2"></i>SmartPro</h3>
+            <p>Citizen service dashboard</p>
+        </div>
+
+        <div class="profile-panel">
+            <div class="role-tag"><i class="fas fa-user"></i> Citizen Portal</div>
+            <h5>{{ citizen_name }}</h5>
+            <p>{{ citizen_email }}</p>
+        </div>
+
+        <nav class="nav-group">
+            <a href="{{ url_for('user_bp.user_dashboard') }}" class="nav-link active">
+                <i class="fas fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="{{ url_for('user_bp.user_complaints') }}" class="nav-link">
+                <i class="fas fa-file-circle-exclamation"></i> Complaints
+            </a>
+            <a href="{{ url_for('user_bp.user_requests_page') }}" class="nav-link">
+                <i class="fas fa-truck"></i> Pickup Requests
+            </a>
+            <a href="{{ url_for('user_bp.user_payments_page') }}" class="nav-link">
+                <i class="fas fa-credit-card"></i> Payments
+            </a>
+            <a href="{{ url_for('user_bp.user_profile_page') }}" class="nav-link">
+                <i class="fas fa-id-card"></i> Profile
+            </a>
+            <a href="{{ url_for('auth_bp.logout') }}" class="nav-link logout-link">
+                <i class="fas fa-right-from-bracket"></i> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <h1>Citizen Dashboard</h1>
+                <p>Track complaints, manage pickup requests, and pay service fees from one place.</p>
+            </div>
+            <div class="topbar-actions">
+                <div class="scope-pill">
+                    <i class="fas fa-location-crosshairs"></i>
+                    Citizen Service Scope
+                </div>
+                {% include "dashboard/_session_timer.html" %}
+            </div>
+        </div>
+
+        <div class="flash-shell">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <section class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card bg-navy">
+                    <div class="metric-icon"><i class="fas fa-file-alt"></i></div>
+                    <h4>{{ stats.total or 0 }}</h4>
+                    <p>Total Complaints</p>
+                    <small>All service issues you have reported.</small>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card bg-amber">
+                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                    <h4>{{ stats.pending or 0 }}</h4>
+                    <p>Pending</p>
+                    <small>Waiting for review or assignment.</small>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card bg-mint">
+                    <div class="metric-icon"><i class="fas fa-spinner"></i></div>
+                    <h4>{{ stats.in_progress or 0 }}</h4>
+                    <p>In Progress</p>
+                    <small>Currently being handled by the team.</small>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card bg-rose">
+                    <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+                    <h4>{{ stats.completed or 0 }}</h4>
+                    <p>Completed</p>
+                    <small>Resolved complaints and finished requests.</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="row g-4 mb-4">
+            <div class="col-lg-4">
+                <div class="content-card quick-action">
+                    <div class="quick-action-icon"><i class="fas fa-plus-circle"></i></div>
+                    <div>
+                        <h4>File New Complaint</h4>
+                        <p>Report garbage issues with location details and optional photo evidence.</p>
+                    </div>
+                    <button class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#fileComplaintModal">Start Complaint</button>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="content-card quick-action">
+                    <div class="quick-action-icon"><i class="fas fa-truck"></i></div>
+                    <div>
+                        <h4>Request Pickup</h4>
+                        <p>Book door-to-door or bulk waste collection in a few clicks.</p>
+                    </div>
+                    <button class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#pickupModal">Schedule Pickup</button>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="content-card quick-action">
+                    <div class="quick-action-icon"><i class="fas fa-credit-card"></i></div>
+                    <div>
+                        <h4>Pay Service Fees</h4>
+                        <p>Use your preferred payment method and keep transaction history in one place.</p>
+                    </div>
+                    <button class="btn btn-theme btn-success-tone" data-bs-toggle="modal" data-bs-target="#paymentModal">Open Payments</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card mb-4">
+            <div class="section-head">
+                <div>
+                    <h3>Your Recent Complaints</h3>
+                    <p>Live complaint status, assigned worker details, and progress updates.</p>
+                </div>
+            </div>
+
+            {% if recent_complaints %}
+                <div class="ticket-list">
+                    {% for comp in recent_complaints %}
+                        <article class="ticket-card {{ comp.status_class }}">
+                            <div class="ticket-meta">
+                                <div>
+                                    <h5>#{{ comp.ticket_id }} | {{ comp.title }}</h5>
+                                    <div class="meta-line">
+                                        <span><i class="fas fa-location-dot me-1"></i>{{ comp.village }}, Taluka {{ comp.taluka }}</span>
+                                        <span><i class="fas fa-user-hard-hat me-1"></i>{{ comp.assigned_worker or 'Not assigned yet' }}</span>
+                                    </div>
+                                </div>
+                                <span class="status-chip {{ comp.status_class }}">{{ comp.status_text }}</span>
+                            </div>
+                            <div class="ticket-progress">
+                                <span class="complaint-progress-fill {% if comp.status_class == 'completed' %}bg-success{% elif comp.status_class == 'in-progress' or comp.status_class == 'in_progress' %}bg-primary{% else %}bg-warning{% endif %}" data-progress="{{ comp.progress_percent }}"></span>
+                            </div>
+                            <div class="meta-line">
+                                <span><i class="fas fa-chart-line me-1"></i>{{ comp.progress_percent }}% complete</span>
+                                <span><i class="fas fa-clock me-1"></i>Last update: {{ comp.last_update }}</span>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-note">Your recent complaints will appear here once you file one.</p>
+            {% endif %}
+        </section>
+
+        <section class="row g-4 mb-4">
+            <div class="col-xl-6">
+                <div class="content-card">
+                    <div class="section-head">
+                        <div>
+                            <h3>Pickup Requests</h3>
+                            <p>Door-to-door and bulk pickup activity linked to your account.</p>
+                        </div>
+                    </div>
+
+                    {% if user_requests %}
+                        <div class="ledger-list">
+                            {% for order in user_requests %}
+                                {% set order_class = order.status|replace('_', '-') %}
+                                <article class="ledger-card {{ order_class }}">
+                                    <div class="ticket-meta">
+                                        <div>
+                                            <h5>#{{ order.id }} | {{ order.garbage_type }}</h5>
+                                            <p>Amount: ₹{{ order.amount }}</p>
+                                        </div>
+                                        <span class="status-chip {{ order_class }}">{{ order.status|replace('_', ' ')|title }}</span>
+                                    </div>
+                                    <p>Requested: {{ order.created_at.strftime('%d %b %Y %I:%M %p') if order.created_at else 'N/A' }}</p>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="empty-note">No pickup requests found yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-xl-6">
+                <div class="content-card">
+                    <div class="section-head">
+                        <div>
+                            <h3>Payment History</h3>
+                            <p>Quick visibility into your recorded citizen service payments.</p>
+                        </div>
+                    </div>
+
+                    {% if payment_history %}
+                        <div class="ledger-list">
+                            {% for payment in payment_history %}
+                                <article class="ledger-card completed">
+                                    <div class="ticket-meta">
+                                        <div>
+                                            <h5>#PAY-{{ payment.id }}</h5>
+                                            <p>{{ payment.garbage_type }} | Total: ₹{{ payment.total }}</p>
+                                        </div>
+                                        <span class="status-chip recorded">Recorded</span>
+                                    </div>
+                                    <p>Paid on: {{ payment.created_at.strftime('%d %b %Y %I:%M %p') if payment.created_at else 'N/A' }}</p>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="empty-note">No payment history available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card profile-card">
+            <div class="section-head">
+                <div>
+                    <h3>Your Profile</h3>
+                    <p>Registered identity and service-linked location information.</p>
+                </div>
+            </div>
+
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <span>Citizen Name</span>
+                    <strong>{{ citizen_name }}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Citizen ID</span>
+                    <strong>#{{ citizen_id }}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Email</span>
+                    <strong>{{ citizen_email }}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Phone</span>
+                    <strong>{{ citizen_phone }}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>District ID</span>
+                    <strong>{{ district_id }}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Taluka ID</span>
+                    <strong>{{ taluka_id }}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Village ID</span>
+                    <strong>{{ village_id }}</strong>
+                </div>
+                <div class="profile-item">
+                    <span>Member Since</span>
+                    <strong>{{ member_since }}</strong>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal fade" id="fileComplaintModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>File New Complaint</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('complaint_bp.add_complaint') }}" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <div class="mb-3">
+                            <label class="form-label">Complaint Title</label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g., Garbage Accumulation" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Describe the issue in detail..." required></textarea>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">District</label>
+                                <select name="district" id="districtSelect" class="form-select" required>
+                                    <option value="">Select District</option>
+                                    <option value="Pune">Pune</option>
+                                    <option value="Ahmednagar">Ahmednagar</option>
+                                    <option value="Satara">Satara</option>
+                                    <option value="Kolhapur">Kolhapur</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Taluka</label>
+                                <select name="taluka" id="talukaSelect" class="form-select" required>
+                                    <option value="">Select Taluka</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label class="form-label">Village</label>
+                            <select name="village" id="villageSelect" class="form-select" required>
+                                <option value="">Select Village</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload Photo (Optional)</label>
+                            <input type="file" name="garbage_img" class="form-control" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Priority Level</label>
+                            <select name="priority" class="form-select">
+                                <option value="Normal">Normal</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer px-0 pb-0">
+                            <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-theme">Submit Complaint</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="pickupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-truck me-2"></i>Request Bulk Pickup</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('user_bp.new_request') }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Pickup Type</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="pickupType" id="doorToDoor" value="Door-to-Door" checked>
+                                <label class="form-check-label" for="doorToDoor">Door-to-Door Collection</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="pickupType" id="bulk" value="Bulk">
+                                <label class="form-check-label" for="bulk">Bulk Waste Pickup</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Waste Type</label>
+                            <select name="wasteType" class="form-select">
+                                <option>Mixed Waste</option>
+                                <option>Wet Waste</option>
+                                <option>Dry Waste</option>
+                                <option>Construction Waste</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Preferred Date &amp; Time</label>
+                            <input type="datetime-local" name="scheduled_time" class="form-control" required>
+                        </div>
+                        <div class="modal-footer px-0 pb-0">
+                            <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-theme">Request Pickup</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-credit-card me-2"></i>Payment Gateway</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="payment-qr text-center">
+                        <h6 class="fw-bold mb-3">Scan to Pay via PhonePe or Google Pay</h6>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=municipality@okhdfcbank&tn=SmartGarbageFee" alt="QR Code">
+                        <hr class="my-4">
+                        <form action="{{ url_for('user_bp.process_dashboard_payment') }}" method="POST">
+                            <select name="request_id" class="form-select mb-3">
+                                <option value="">Select related request (optional)</option>
+                                {% for order in user_requests %}
+                                    <option value="{{ order.id }}">#{{ order.id }} - {{ order.garbage_type }} - ₹{{ order.amount }}</option>
+                                {% endfor %}
+                            </select>
+                            <input type="number" name="amount" class="form-control" placeholder="Amount in ₹" value="500">
+                            <button type="submit" name="gateway" value="phonepe" class="btn btn-theme mt-3 w-100">Pay with PhonePe</button>
+                            <button type="submit" name="gateway" value="gpay" class="btn btn-theme btn-success-tone mt-2 w-100">Pay with Google Pay</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% include "dashboard/_session_timer_script.html" %}
+    <script>
+        document.getElementById('districtSelect')?.addEventListener('change', async function() {
+            const district = this.value;
+            const res = await fetch(`/api/talukas/${district}`);
+            const talukas = await res.json();
+            const select = document.getElementById('talukaSelect');
+            select.innerHTML = '<option value="">Select Taluka</option>';
+            talukas.forEach((taluka) => {
+                select.innerHTML += `<option value="${taluka}">${taluka}</option>`;
+            });
+        });
+
+        document.getElementById('talukaSelect')?.addEventListener('change', async function() {
+            const taluka = this.value;
+            const res = await fetch(`/api/villages/${taluka}`);
+            const villages = await res.json();
+            const select = document.getElementById('villageSelect');
+            select.innerHTML = '<option value="">Select Village</option>';
+            villages.forEach((village) => {
+                select.innerHTML += `<option value="${village}">${village}</option>`;
+            });
+        });
+
+        document.querySelectorAll('.complaint-progress-fill').forEach((bar) => {
+            const progress = Number(bar.dataset.progress || 0);
+            bar.style.width = `${progress}%`;
+        });
+    </script>
+</body>
+</html>

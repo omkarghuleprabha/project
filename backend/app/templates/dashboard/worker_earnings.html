@@ -1,0 +1,62 @@
+{% extends "dashboard/worker_base.html" %}
+
+{% block worker_content %}
+<div class="content-shell">
+    <div class="page-heading">
+        <div>
+            <h2>Earnings</h2>
+            <p>Track completed payouts and pending request amounts.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="info-card">
+                <div class="info-label">Total Earned</div>
+                <div class="info-value fs-4">₹{{ total_earned or 0 }}</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="info-card">
+                <div class="info-label">Pending Amount</div>
+                <div class="info-value fs-4">₹{{ pending_amount or 0 }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-shell">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in earnings_rows %}
+                    <tr>
+                        <td>#{{ row.id }}</td>
+                        <td>{{ row.garbage_type }}</td>
+                        <td>
+                            <span class="badge-soft {{ row.status|replace(' ', '_')|lower }}">
+                                {{ row.status|replace('_', ' ')|title }}
+                            </span>
+                        </td>
+                        <td>₹{{ row.amount or 0 }}</td>
+                        <td>{{ row.created_at.strftime('%d %b %Y %I:%M %p') if row.created_at else 'N/A' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No earnings data available yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

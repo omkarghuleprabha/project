@@ -1,0 +1,172 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-white">Business Analytics Dashboard</h2>
+        <div class="text-muted">
+            <i class="bi bi-calendar3 me-2"></i> <span id="currentDate"></span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card p-4 shadow-sm border-0 border-start border-primary border-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                        <i class="bi bi-currency-rupee fs-3 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Total Revenue</h6>
+                        <h3 class="mb-0 fw-bold">₹45,250</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-4 shadow-sm border-0 border-start border-warning border-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                        <i class="bi bi-clock-history fs-3 text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Pending Tasks</h6>
+                        <h3 class="mb-0 fw-bold">{{ pending_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-4 shadow-sm border-0 border-start border-success border-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                        <i class="bi bi-check2-circle fs-3 text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Executions Done</h6>
+                        <h3 class="mb-0 fw-bold">{{ completed_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-4 shadow-sm border-0 border-start border-info border-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-info bg-opacity-10 p-3 rounded-3 me-3">
+                        <i class="bi bi-truck fs-3 text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">On-Field Workers</h6>
+                        <h3 class="mb-0 fw-bold">{{ workers_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card p-4 shadow-sm">
+                <h5 class="mb-4">Garbage Collection Trends (Weekly)</h5>
+                <canvas id="revenueChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-4 shadow-sm">
+                <h5 class="mb-4">Area-wise Distribution</h5>
+                <canvas id="areaChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <div class="card p-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Latest Service Requests</h5>
+                <a href="/admin/requests" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Customer</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Execution Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in recent_requests %}
+                        <tr>
+                            <td>#{{ req.id }}</td>
+                            <td>{{ req.user_name }}</td>
+                            <td>{{ req.area }}</td>
+                            <td><span class="badge rounded-pill bg-{{ 'warning' if req.status == 'pending' else 'success' }}">{{ req.status }}</span></td>
+                            <td><span class="text-success">Paid</span></td>
+                            <td>{{ req.created_at.strftime('%d %b, %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Set Current Date
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Revenue/Pickup Line Chart
+    const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctxRevenue, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Pickups',
+                data: [45, 52, 38, 65, 48, 70, 40],
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: '#2d324d' }, ticks: { color: '#a0a6b5' } },
+                x: { grid: { display: false }, ticks: { color: '#a0a6b5' } }
+            }
+        }
+    });
+
+    // Area Distribution Pie Chart
+    const ctxArea = document.getElementById('areaChart').getContext('2d');
+    new Chart(ctxArea, {
+        type: 'doughnut',
+        data: {
+            labels: ['Kothrud', 'Baner', 'Hinjewadi'],
+            datasets: [{
+                data: [40, 30, 30],
+                backgroundColor: ['#0d6efd', '#198754', '#ffc107'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            cutout: '70%',
+            plugins: { legend: { position: 'bottom', labels: { color: '#a0a6b5', padding: 20 } } }
+        }
+    });
+</script>
+
+<style>
+    .card { background-color: #1a1d2b !important; border: 1px solid #2d324d !important; border-radius: 15px !important; }
+    .table-dark { --bs-table-bg: #1a1d2b; }
+    .icon-box { display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; }
+</style>
+{% endblock %}

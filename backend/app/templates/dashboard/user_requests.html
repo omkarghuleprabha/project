@@ -1,0 +1,90 @@
+{% extends "dashboard/user_base.html" %}
+
+{% block user_title %}Pickup Requests{% endblock %}
+{% block user_subtitle %}Track every pickup request you have submitted and its current status.{% endblock %}
+
+{% block user_content %}
+<div class="content-shell">
+    <div class="page-heading">
+        <div>
+            <h2>My Pickup Requests</h2>
+            <p>These requests are loaded from the `requests` table.</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#pickupModal">
+            <i class="fas fa-plus me-2"></i>New Request
+        </button>
+    </div>
+
+    <div class="table-shell">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in user_requests %}
+                    <tr>
+                        <td>#{{ req.id }}</td>
+                        <td>{{ req.garbage_type }}</td>
+                        <td><span class="badge-soft {{ req.status|replace(' ', '_')|lower }}">{{ req.status|replace('_', ' ')|title }}</span></td>
+                        <td>₹{{ req.amount or 0 }}</td>
+                        <td>{{ req.created_at.strftime('%d %b %Y %I:%M %p') if req.created_at else 'N/A' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center py-4 text-muted">No pickup requests found yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pickupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Bulk Pickup</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('user_bp.new_request') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Pickup Type</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pickupType" id="doorToDoor" value="Door-to-Door" checked>
+                            <label class="form-check-label" for="doorToDoor">Door-to-Door Collection</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pickupType" id="bulk" value="Bulk">
+                            <label class="form-check-label" for="bulk">Bulk Waste Pickup</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Waste Type</label>
+                        <select name="wasteType" class="form-control">
+                            <option>Mixed Waste</option>
+                            <option>Wet Waste</option>
+                            <option>Dry Waste</option>
+                            <option>Construction Waste</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Preferred Date & Time</label>
+                        <input type="datetime-local" name="scheduled_time" class="form-control" required>
+                    </div>
+                    <div class="modal-footer px-0 pb-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Request Pickup</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

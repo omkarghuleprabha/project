@@ -1,0 +1,89 @@
+{% extends "dashboard/user_base.html" %}
+
+{% block user_title %}Profile{% endblock %}
+{% block user_subtitle %}View your personal information and service activity summary.{% endblock %}
+
+{% block user_content %}
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="content-shell">
+            <div class="page-heading">
+                <div>
+                    <h2>Personal Information</h2>
+                    <p>Loaded from the `users` table.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value">{{ user_profile.name or session.get('user_name', 'Citizen') }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-label">Citizen ID</div>
+                    <div class="info-value">#{{ user_profile.id or session.get('user_id', 'N/A') }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ user_profile.email or session.get('email', session.get('user_email', 'N/A')) }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-label">Phone</div>
+                    <div class="info-value">{{ user_profile.phone or 'N/A' }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-label">District ID</div>
+                    <div class="info-value">{{ user_profile.district_id or 'N/A' }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-label">Taluka ID</div>
+                    <div class="info-value">{{ user_profile.taluka_id or 'N/A' }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-label">Village ID</div>
+                    <div class="info-value">{{ user_profile.village_id or 'N/A' }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-label">Member Since</div>
+                    <div class="info-value">{{ user_profile.created_at.strftime('%d %b %Y') if user_profile.created_at else 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="content-shell">
+            <div class="page-heading">
+                <div>
+                    <h2>Activity Summary</h2>
+                    <p>Your current service stats.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="info-label">Complaints</div>
+                    <div class="info-value">{{ stats.total or 0 }}</div>
+                </div>
+                <div class="col-6">
+                    <div class="info-label">Pickup Requests</div>
+                    <div class="info-value">{{ request_stats.total_requests or 0 }}</div>
+                </div>
+                <div class="col-6">
+                    <div class="info-label">Pending Requests</div>
+                    <div class="info-value">{{ request_stats.pending_requests or 0 }}</div>
+                </div>
+                <div class="col-6">
+                    <div class="info-label">In Progress</div>
+                    <div class="info-value">{{ request_stats.in_progress_requests or 0 }}</div>
+                </div>
+                <div class="col-6">
+                    <div class="info-label">Completed Requests</div>
+                    <div class="info-value">{{ request_stats.completed_requests or 0 }}</div>
+                </div>
+                <div class="col-6">
+                    <div class="info-label">Payments</div>
+                    <div class="info-value">{{ payment_history|length }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

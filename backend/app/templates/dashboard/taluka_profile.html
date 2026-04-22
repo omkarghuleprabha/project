@@ -1,0 +1,65 @@
+{% extends "dashboard/taluka_base.html" %}
+
+{% block page_title %}Admin Profile{% endblock %}
+{% block page_subtitle %}Personal details and operational scope for the current taluka administrator.{% endblock %}
+
+{% block taluka_content %}
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Personal Information</h3>
+                    <p>Logged-in administrator details</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Full Name</div>
+                    <div class="fw-bold fs-5">{{ admin_profile.name }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Admin ID</div>
+                    <div class="fw-bold fs-5">#{{ admin_profile.id }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Email</div>
+                    <div class="fw-bold">{{ admin_profile.email }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Phone</div>
+                    <div class="fw-bold">{{ admin_profile.phone }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Taluka</div>
+                    <div class="fw-bold">{{ admin_profile.taluka_name }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">District</div>
+                    <div class="fw-bold">{{ admin_profile.district_name }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small text-uppercase">Member Since</div>
+                    <div class="fw-bold">{{ admin_profile.created_at.strftime('%d %b %Y') if admin_profile.created_at else 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Operational Scope</h3>
+                    <p>Current service footprint under your administration</p>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Villages</span><strong>{{ dashboard_stats.villages }}</strong></div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Workers</span><strong>{{ dashboard_stats.workers }}</strong></div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Citizens</span><strong>{{ dashboard_stats.citizens }}</strong></div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Total Complaints</span><strong>{{ dashboard_stats.complaints_total }}</strong></div>
+            <div class="d-flex justify-content-between py-2 border-bottom"><span>Service Requests</span><strong>{{ dashboard_stats.requests_total }}</strong></div>
+            <div class="d-flex justify-content-between py-2"><span>Completed Value</span><strong>₹{{ dashboard_stats.completed_value }}</strong></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

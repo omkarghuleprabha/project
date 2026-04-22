@@ -1,0 +1,165 @@
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f4f6f9;
+}
+
+.navbar{
+    background:#111;
+    color:white;
+    padding:15px;
+    font-size:20px;
+}
+
+.sidebar{
+    width:220px;
+    height:100vh;
+    background:#1f2d3d;
+    color:white;
+    position:fixed;
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    padding:12px;
+    text-decoration:none;
+}
+
+.sidebar a:hover{
+    background:#007bff;
+}
+
+.content{
+    margin-left:220px;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    margin:10px;
+    display:inline-block;
+    width:200px;
+    border-radius:8px;
+    box-shadow:0 0 5px gray;
+}
+.cards{
+    display:flex;
+    gap:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    width:200px;
+    box-shadow:0 0 5px gray;
+    text-align:center;
+}
+/* 1. TOP HEADER (Logo + Nav) */
+.navbar { 
+    background: #ffffff; 
+    padding: 20px 0; 
+    border-bottom: 1px solid #eee; 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+}
+
+/* Updated Logo with Smooth Zoom */
+.navbar-brand img { 
+    height: 60px; 
+    transition: transform 0.4s ease, box-shadow 0.4s ease; 
+    cursor: pointer;
+    position: relative;
+    z-index: 1100;
+}
+
+/* Full size zoom on hover - Returns to 60px automatically on mouse out */
+.navbar-brand img:hover { 
+    transform: scale(2.5); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.nav-link { 
+    color: #333 !important; 
+    font-weight: 600; 
+    text-transform: uppercase; 
+    font-size: 13px; 
+    padding: 0 15px !important; 
+}
+
+.nav-link:hover { 
+    color: var(--ap-green) !important; 
+}
+
+/* 2. SLIDING CAROUSEL WITH POLYGON */
+.carousel-item { 
+    height: 70vh; 
+    min-height: 500px; 
+    background-size: cover; 
+    background-position: center; 
+    position: relative; 
+}
+/* Animation for page load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Entrance classes */
+.animate-in {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* Advanced Button Hover Effects */
+.btn-login {
+    background: var(--ap-green);
+    color: white;
+    padding: 14px 45px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-decoration: none;
+    display: inline-block;
+    border: 2px solid transparent;
+}
+
+.btn-login:hover {
+    background: #1e7e34;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 15px 30px rgba(40, 167, 69, 0.4);
+    letter-spacing: 2px; /* Slight expansion effect */
+}
+
+/* Footer Link Animations */
+.footer-link {
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-link:hover {
+    transform: scale(1.2);
+    color: var(--ap-green) !important;
+    text-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+}
+
+/* Pulse effect for the main CTA button */
+.pulse-animation {
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(40, 167, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}

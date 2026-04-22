@@ -1,0 +1,229 @@
+{% extends "dashboard/taluka_base.html" %}
+
+{% block page_title %}Taluka Overview{% endblock %}
+{% block page_subtitle %}A live operational view of service activity across {{ admin_profile.taluka_name }}.{% endblock %}
+
+{% block taluka_content %}
+{% include "dashboard/_taluka_scope_map.html" %}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="metric-card bg-navy">
+            <div><i class="fas fa-users fa-lg"></i></div>
+            <h4>{{ dashboard_stats.workers }}</h4>
+            <p>Active field workers across {{ dashboard_stats.villages }} villages</p>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="metric-card bg-amber">
+            <div><i class="fas fa-triangle-exclamation fa-lg"></i></div>
+            <h4>{{ dashboard_stats.complaints_pending }}</h4>
+            <p>Pending complaints waiting on attention</p>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="metric-card bg-mint">
+            <div><i class="fas fa-circle-check fa-lg"></i></div>
+            <h4>{{ dashboard_stats.requests_completed }}</h4>
+            <p>Completed service requests in your taluka</p>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="metric-card bg-rose">
+            <div><i class="fas fa-wallet fa-lg"></i></div>
+            <h4>₹{{ dashboard_stats.completed_value }}</h4>
+            <p>Completed request value handled by your team</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-7">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Service Mix</h3>
+                    <p>Complaint and request movement across the taluka</p>
+                </div>
+            </div>
+            <canvas id="talukaStatusChart" height="160"></canvas>
+        </div>
+    </div>
+    <div class="col-xl-5">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Village Completion</h3>
+                    <p>Door-to-door progress snapshot by village</p>
+                </div>
+            </div>
+            {% for village in village_progress[:5] %}
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>{{ village.name }}</strong>
+                    <span>{{ village.progress }}%</span>
+                </div>
+                <div class="progress-shell">
+                    <span style="width: {{ village.progress }}%;"></span>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-note">No village service data is available yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-6">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Recent Complaints</h3>
+                    <p>Latest citizen complaints in {{ admin_profile.taluka_name }}</p>
+                </div>
+                <a href="{{ url_for('auth_bp.taluka_complaints') }}" class="btn btn-outline-dark btn-sm">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Complaint</th>
+                            <th>Citizen</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_complaints %}
+                        <tr>
+                            <td>
+                                <strong>#{{ item.id }} {{ item.title }}</strong><br>
+                                <small class="text-muted">{{ item.village }} • {{ item.created_at.strftime('%d %b %Y') if item.created_at else 'N/A' }}</small>
+                            </td>
+                            <td>{{ item.citizen_name }}</td>
+                            <td>
+                                <span class="mini-badge {{ item.status|replace(' ', '_')|lower }}">{{ item.status|replace('_', ' ')|title }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="empty-note">No complaints available.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Worker Performance</h3>
+                    <p>Top-performing workers based on completed tasks</p>
+                </div>
+                <a href="{{ url_for('auth_bp.taluka_workers') }}" class="btn btn-outline-dark btn-sm">Manage Workers</a>
+            </div>
+            {% for worker in worker_summary %}
+            <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div>
+                    <strong>{{ worker.name }}</strong><br>
+                    <small class="text-muted">{{ worker.village_name or 'Village not assigned' }}</small>
+                </div>
+                <div class="text-end">
+                    <div><strong>{{ worker.completed_tasks or 0 }}</strong> completed</div>
+                    <small class="text-muted">{{ worker.open_tasks or 0 }} open tasks</small>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-note">No worker performance data available.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="section-head">
+        <div>
+            <h3>Recent Service Requests</h3>
+            <p>Assign unallocated requests directly from the dashboard</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Request</th>
+                    <th>Citizen</th>
+                    <th>Village</th>
+                    <th>Status</th>
+                    <th>Worker</th>
+                    <th>Assign</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in recent_requests %}
+                <tr>
+                    <td>
+                        <strong>#{{ request.id }} {{ request.garbage_type }}</strong><br>
+                        <small class="text-muted">₹{{ request.amount }} • {{ request.created_at.strftime('%d %b %Y %I:%M %p') if request.created_at else 'N/A' }}</small>
+                    </td>
+                    <td>{{ request.citizen_name }}</td>
+                    <td>{{ request.village_name }}</td>
+                    <td><span class="mini-badge {{ request.status|replace(' ', '_')|lower }}">{{ request.status|replace('_', ' ')|title }}</span></td>
+                    <td>{{ request.worker_name }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('auth_bp.taluka_assign_request', request_id=request.id) }}" class="d-flex gap-2">
+                            <input type="hidden" name="next_page" value="{{ url_for('auth_bp.taluka_dashboard') }}">
+                            <select class="form-select form-select-sm" name="worker_id" {% if request.worker_id %}disabled{% endif %}>
+                                <option value="">Choose</option>
+                                {% for worker in available_workers %}
+                                <option value="{{ worker.id }}">{{ worker.name }}{% if worker.village_name %} • {{ worker.village_name }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-sm btn-dark" {% if request.worker_id %}disabled{% endif %}>Assign</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="empty-note">No request activity found for this taluka.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block taluka_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% include "dashboard/_taluka_scope_map_script.html" %}
+<script>
+const chartData = {{ chart_data|tojson }};
+const ctx = document.getElementById('talukaStatusChart');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Pending', 'In Progress', 'Completed'],
+            datasets: [
+                {
+                    label: 'Complaints',
+                    data: chartData.complaints,
+                    backgroundColor: ['#fca311', '#4ea8de', '#2a9d8f'],
+                    borderRadius: 10
+                },
+                {
+                    label: 'Requests',
+                    data: chartData.requests,
+                    backgroundColor: ['#ffd166', '#89c2d9', '#52b69a'],
+                    borderRadius: 10
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+</script>
+{% endblock %}

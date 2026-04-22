@@ -1,0 +1,135 @@
+{% extends "dashboard/user_base.html" %}
+
+{% block user_title %}Complaints{% endblock %}
+{% block user_subtitle %}Track the complaints you have filed and submit a new one when needed.{% endblock %}
+
+{% block user_content %}
+<div class="content-shell">
+    <div class="page-heading">
+        <div>
+            <h2>My Complaints</h2>
+            <p>These entries are loaded from the `complaints` table.</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fileComplaintModal">
+            <i class="fas fa-plus me-2"></i>New Complaint
+        </button>
+    </div>
+
+    <div class="table-shell">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Complaint ID</th>
+                        <th>Title</th>
+                        <th>Location</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th>Last Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comp in recent_complaints %}
+                    <tr>
+                        <td>#{{ comp.ticket_id }}</td>
+                        <td>{{ comp.title }}</td>
+                        <td>{{ comp.village }}, {{ comp.taluka }}</td>
+                        <td>{{ comp.assigned_worker }}</td>
+                        <td><span class="badge-soft {{ comp.status_class|replace('-', '_') }}">{{ comp.status_text }}</span></td>
+                        <td>{{ comp.last_update }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center py-4 text-muted">No complaints found yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="fileComplaintModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">File New Complaint</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('complaint_bp.add_complaint') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="next_page" value="{{ request.path }}">
+                    <div class="mb-3">
+                        <label class="form-label">Complaint Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g., Garbage Accumulation" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Describe the issue in detail..." required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">District</label>
+                            <select name="district" id="districtSelect" class="form-control" required>
+                                <option value="">Select District</option>
+                                <option value="Pune">Pune</option>
+                                <option value="Ahmednagar">Ahmednagar</option>
+                                <option value="Satara">Satara</option>
+                                <option value="Kolhapur">Kolhapur</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Taluka</label>
+                            <select name="taluka" id="talukaSelect" class="form-control" required>
+                                <option value="">Select Taluka</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label">Village</label>
+                        <select name="village" id="villageSelect" class="form-control" required>
+                            <option value="">Select Village</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Upload Photo (Optional)</label>
+                        <input type="file" name="garbage_img" class="form-control" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Priority Level</label>
+                        <select name="priority" class="form-control">
+                            <option value="Normal">Normal</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer px-0 pb-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block user_scripts %}
+<script>
+document.getElementById('districtSelect')?.addEventListener('change', async function() {
+    const district = this.value;
+    const res = await fetch(`/api/talukas/${district}`);
+    const talukas = await res.json();
+    const select = document.getElementById('talukaSelect');
+    select.innerHTML = '<option value="">Select Taluka</option>';
+    talukas.forEach(t => select.innerHTML += `<option value="${t}">${t}</option>`);
+});
+
+document.getElementById('talukaSelect')?.addEventListener('change', async function() {
+    const taluka = this.value;
+    const res = await fetch(`/api/villages/${taluka}`);
+    const villages = await res.json();
+    const select = document.getElementById('villageSelect');
+    select.innerHTML = '<option value="">Select Village</option>';
+    villages.forEach(v => select.innerHTML += `<option value="${v}">${v}</option>`);
+});
+</script>
+{% endblock %}

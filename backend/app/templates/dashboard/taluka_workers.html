@@ -1,0 +1,208 @@
+{% extends "dashboard/taluka_base.html" %}
+
+{% block page_title %}Worker Management{% endblock %}
+{% block page_subtitle %}Track workforce coverage and performance across {{ admin_profile.taluka_name }}.{% endblock %}
+
+{% block taluka_content %}
+<div class="content-card mb-4">
+    <div class="section-head">
+        <div>
+            <h3>Assign Operational Task</h3>
+            <p>Create a manual field task for a worker inside {{ admin_profile.taluka_name }}.</p>
+        </div>
+        <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#assignTaskModal">
+            <i class="fas fa-plus me-2"></i>Assign Task
+        </button>
+    </div>
+    <div class="d-flex flex-wrap gap-3 text-muted small">
+        <span><i class="fas fa-location-dot me-1"></i>Choose the worker responsible for that village or coverage area.</span>
+        <span><i class="fas fa-clipboard-check me-1"></i>New tasks appear on the worker dashboard and task list.</span>
+    </div>
+</div>
+
+<div class="content-card mb-4">
+    <div class="section-head">
+        <div>
+            <h3>Field Workers</h3>
+            <p>All village workers assigned within your taluka</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Worker</th>
+                    <th>Village</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Tasks</th>
+                    <th>Completed</th>
+                    <th>Assign Task</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for worker in workers %}
+                <tr>
+                    <td>
+                        <strong>{{ worker.name }}</strong><br>
+                        <small class="text-muted">{{ worker.email }}</small>
+                    </td>
+                    <td>{{ worker.village_name or 'Not assigned' }}</td>
+                    <td>{{ worker.phone }}</td>
+                    <td><span class="mini-badge {{ worker.status|replace(' ', '_')|lower }}">{{ worker.status }}</span></td>
+                    <td>{{ worker.active_tasks or 0 }} active / {{ worker.total_tasks or 0 }} total</td>
+                    <td>{{ worker.completed_tasks or 0 }}</td>
+                    <td>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-dark"
+                            data-bs-toggle="modal"
+                            data-bs-target="#assignTaskModal"
+                            data-worker-id="{{ worker.id }}"
+                            data-worker-name="{{ worker.name }}"
+                            data-worker-village="{{ worker.village_name or 'Assigned Area' }}"
+                        >
+                            Assign Task
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="empty-note">No workers found for this taluka.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="section-head">
+        <div>
+            <h3>Recently Assigned Manual Tasks</h3>
+            <p>Track tasks created directly by the taluka office.</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Worker</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Assigned On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in assigned_tasks %}
+                <tr>
+                    <td>
+                        <strong>#TASK-{{ task.id }} {{ task.location_name }}</strong><br>
+                        <small class="text-muted">{{ task.description }}</small>
+                    </td>
+                    <td>
+                        {{ task.worker_name }}<br>
+                        <small class="text-muted">{{ task.village_name }}</small>
+                    </td>
+                    <td><span class="mini-badge {{ task.priority|lower }}">{{ task.priority|title }}</span></td>
+                    <td><span class="mini-badge {{ task.status|replace(' ', '_')|lower }}">{{ task.status|replace('_', ' ')|title }}</span></td>
+                    <td>{{ task.assigned_at.strftime('%d %b %Y %I:%M %p') if task.assigned_at else 'N/A' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="empty-note">No manual tasks have been assigned yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="assignTaskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('auth_bp.taluka_assign_task') }}">
+                <input type="hidden" name="next_page" value="{{ request.path }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign Task To Worker</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="assignTaskWorker" class="form-label">Worker</label>
+                        <select name="worker_id" id="assignTaskWorker" class="form-select" required>
+                            <option value="">Select worker</option>
+                            {% for worker in workers %}
+                            <option value="{{ worker.id }}">{{ worker.name }} • {{ worker.village_name or 'Not assigned' }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text" id="assignTaskWorkerHelp">Choose the worker who covers the required area.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="assignTaskLocation" class="form-label">Area / Location</label>
+                        <input
+                            type="text"
+                            name="location_name"
+                            id="assignTaskLocation"
+                            class="form-control"
+                            placeholder="e.g., Main road bin near market"
+                            required
+                        >
+                    </div>
+                    <div class="mb-3">
+                        <label for="assignTaskDescription" class="form-label">Task Description</label>
+                        <textarea
+                            name="description"
+                            id="assignTaskDescription"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Describe what the worker should do at that location."
+                            required
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label for="assignTaskPriority" class="form-label">Priority</label>
+                        <select name="priority" id="assignTaskPriority" class="form-select">
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-dark">Assign Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block taluka_scripts %}
+<script>
+const assignTaskModal = document.getElementById('assignTaskModal');
+if (assignTaskModal) {
+    assignTaskModal.addEventListener('show.bs.modal', (event) => {
+        const trigger = event.relatedTarget;
+        const workerId = trigger?.getAttribute('data-worker-id') || '';
+        const workerName = trigger?.getAttribute('data-worker-name') || '';
+        const workerVillage = trigger?.getAttribute('data-worker-village') || '';
+        const workerSelect = document.getElementById('assignTaskWorker');
+        const workerHelp = document.getElementById('assignTaskWorkerHelp');
+        const locationField = document.getElementById('assignTaskLocation');
+
+        if (workerSelect) {
+            workerSelect.value = workerId;
+        }
+
+        if (workerHelp) {
+            workerHelp.textContent = workerName
+                ? `${workerName} is assigned to ${workerVillage}.`
+                : 'Choose the worker who covers the required area.';
+        }
+
+        if (locationField && workerVillage && !locationField.value) {
+            locationField.placeholder = `e.g., ${workerVillage} main road`;
+        }
+    });
+}
+</script>
+{% endblock %}

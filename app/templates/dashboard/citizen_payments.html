@@ -1,0 +1,56 @@
+{% extends "dashboard/citizen_base.html" %}
+
+{% block citizen_content %}
+<div class="section-title">
+    <i class="fas fa-credit-card"></i> Payments
+</div>
+<div class="page-subtitle">Make a payment and review the most recent payment entries.</div>
+
+<div class="content-card">
+    <div class="text-center">
+        <h5 class="mb-3">Pay via PhonePe or Google Pay</h5>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=municipality@okhdfcbank&tn=SmartGarbageFee" alt="QR Code" class="img-fluid mb-3" style="max-width: 200px;">
+    </div>
+    <form action="{{ url_for('user_bp.process_payment') }}" method="POST">
+        <input type="hidden" name="next" value="{{ url_for('auth_bp.citizen_payments') }}">
+        <div class="mb-3">
+            <label class="form-label">Amount</label>
+            <input type="number" name="amount" class="form-control" placeholder="Amount in Rs." value="500">
+        </div>
+        <div class="d-grid gap-2">
+            <button type="submit" name="gateway" value="phonepe" class="btn btn-primary">Pay with PhonePe</button>
+            <button type="submit" name="gateway" value="gpay" class="btn btn-success">Pay with Google Pay</button>
+        </div>
+    </form>
+</div>
+
+<div class="section-title mt-4">
+    <i class="fas fa-wallet"></i> Recent Payments
+</div>
+<div class="content-card">
+    {% if recent_payments %}
+    <table class="mini-table">
+        <thead>
+            <tr>
+                <th>Payment ID</th>
+                <th>Description</th>
+                <th>Total</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in recent_payments %}
+            <tr>
+                <td>PAY-{{ "%04d"|format(payment.id) }}</td>
+                <td>{{ payment.garbage_type or 'Manual UPI Payment' }}</td>
+                <td>Rs. {{ payment.total or 0 }}</td>
+                <td>{{ payment.created_at.strftime('%d %b %Y %I:%M %p') if payment.created_at else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">No payment records yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

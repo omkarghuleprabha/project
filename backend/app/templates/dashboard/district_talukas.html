@@ -1,0 +1,53 @@
+{% extends "dashboard/district_base.html" %}
+
+{% block page_title %}District Talukas{% endblock %}
+{% block page_subtitle %}Browse every taluka in {{ district_profile.district_name }} and open village and worker details for each one.{% endblock %}
+
+{% block district_content %}
+<div class="content-card">
+    <div class="section-head">
+        <div>
+            <h3>Taluka Directory</h3>
+            <p>Open a taluka to see villages, workers, requests, and coverage details.</p>
+        </div>
+        <span class="mini-badge good">{{ district_talukas|length }} talukas</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Taluka</th>
+                    <th>Taluka Admin</th>
+                    <th>Villages</th>
+                    <th>Workers</th>
+                    <th>Citizens</th>
+                    <th>Requests</th>
+                    <th>Complaints</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for taluka in district_talukas %}
+                <tr>
+                    <td><strong>{{ taluka.name }}</strong></td>
+                    <td>
+                        {{ taluka.admin_name }}<br>
+                        <small class="text-muted">{% if taluka.admin_assigned %}Assigned{% else %}Not assigned{% endif %}</small>
+                    </td>
+                    <td>{{ taluka.villages }}</td>
+                    <td>{{ taluka.workers }}</td>
+                    <td>{{ taluka.citizens }}</td>
+                    <td>{{ taluka.completed_requests }}/{{ taluka.total_requests }}</td>
+                    <td>{{ taluka.open_complaints }} open / {{ taluka.total_complaints }} total</td>
+                    <td>
+                        <a href="{{ url_for('auth_bp.district_taluka_detail', taluka_id=taluka.id) }}" class="btn btn-outline-dark btn-sm">Open Taluka</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="empty-note">No talukas are available for this district yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

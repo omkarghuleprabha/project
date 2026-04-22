@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Smart Garbage Pro</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <style>
+        :root { --ap-green: #2ecc71; --ap-header-grad: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        body { background: #f1f5f9; padding: 60px 0; font-family: 'Inter', sans-serif; }
+        .reg-card { background: white; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.1); overflow: hidden; max-width: 850px; margin: 0 auto; }
+        .reg-header { background: var(--ap-header-grad); color: white; padding: 40px; text-align: center; border-bottom: 4px solid var(--ap-green); }
+        .reg-body { padding: 40px; }
+        
+        .form-label { font-weight: 600; color: #27ae60; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .form-control-custom { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; transition: 0.3s; width: 100%; }
+        
+        .input-group-text { background: #f8fafc; border: 1px solid #e2e8f0; border-left: none; cursor: pointer; border-radius: 0 10px 10px 0; }
+        .input-group .form-control-custom { border-right: none; border-radius: 10px 0 0 10px; flex: 1; }
+
+        .btn-submit { background: var(--ap-green); color: white; border: none; padding: 16px; border-radius: 10px; font-weight: 700; width: 100%; margin-top: 30px; transition: 0.3s; font-size: 1.1rem; }
+        .btn-submit:hover { background: #27ae60; transform: translateY(-2px); box-shadow: 0 10px 15px rgba(46, 204, 113, 0.2); }
+        
+        .login-link { text-align: center; margin-top: 25px; font-size: 0.95rem; }
+        .login-link a { color: var(--ap-green); font-weight: 700; text-decoration: none; }
+        
+        .select2-container--default .select2-selection--single { height: 50px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding-top: 10px; }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 48px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="reg-card">
+        <div class="reg-header">
+            <h2 class="fw-bold">Create Account</h2>
+            <p class="opacity-75">Join the Smart Garbage Management System</p>
+        </div>
+        
+        <div class="reg-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('auth_bp.register') }}" method="POST" autocomplete="off">
+                
+                <div class="mb-4">
+                    <label class="form-label">Account Type</label>
+                    <select name="role" id="role_select" class="form-control searchable-select" required>
+                        <option value="user">Citizen / User</option>
+                        <option value="worker">Field Worker</option>
+                        <option value="admin">Taluka Admin</option>
+                        <option value="district_admin">District Admin</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control form-control-custom" placeholder="e.g. Omkar Ghule" autocomplete="off" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" name="phone" class="form-control form-control-custom" maxlength="10" placeholder="10 Digit Mobile" autocomplete="off" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="form-control form-control-custom" placeholder="name@example.com" autocomplete="off" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <input type="password" name="password" id="reg_pass" class="form-control form-control-custom" placeholder="••••••••" autocomplete="new-password" required>
+                            <span class="input-group-text" onclick="togglePassword('reg_pass', 'reg_icon')">
+                                <i class="fas fa-eye text-muted" id="reg_icon"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3" id="state_box">
+                        <label class="form-label">State</label>
+                        <select id="state_id" name="state_id" class="form-control searchable-select" required>
+                            <option value="">Select State</option>
+                            {% for state in states %}
+                                <option value="{{ state.id }}">{{ state.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3" id="district_box">
+                        <label class="form-label">District</label>
+                        <select id="district_id" name="district_id" class="form-control searchable-select" required>
+                            <option value="">Select District</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3" id="taluka_box">
+                        <label class="form-label">Taluka</label>
+                        <select id="taluka_id" name="taluka_id" class="form-control searchable-select" required>
+                            <option value="">Select Taluka</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3" id="village_box">
+                        <label class="form-label">Village / Ward</label>
+                        <select id="village_id" name="village_id" class="form-control searchable-select" required>
+                            <option value="">Select Village</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Register Account</button>
+                <div class="login-link">Already have an account? <a href="{{ url_for('auth_bp.login') }}">Login Securely</a></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    function togglePassword(inputId, iconId) {
+        const passInput = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (passInput.type === "password") {
+            passInput.type = "text";
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            passInput.type = "password";
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    $(document).ready(function() {
+        $('.searchable-select').select2({ width: '100%' });
+
+        const roleSelect = $('#role_select');
+        const stateSel = $('#state_id'), distSel = $('#district_id'), talSel = $('#taluka_id'), vilSel = $('#village_id');
+
+        roleSelect.on('change', function() {
+            const role = $(this).val();
+            $('#district_box, #taluka_box, #village_box').show();
+            distSel.prop('required', true); 
+            talSel.prop('required', true); 
+            vilSel.prop('required', true);
+
+            if (role === 'district_admin') {
+                $('#taluka_box, #village_box').hide();
+                talSel.prop('required', false);
+                vilSel.prop('required', false);
+            } else if (role === 'admin') {
+                $('#village_box').hide();
+                vilSel.prop('required', false);
+            }
+        });
+
+        stateSel.on('change', function() {
+            if(!this.value) return;
+            distSel.empty().append('<option>Loading...</option>').trigger('change');
+            fetch(`/auth/get_districts/${this.value}`).then(res => res.json()).then(data => {
+                distSel.empty().append('<option value="">Select District</option>');
+                data.forEach(d => distSel.append(new Option(d.name, d.id)));
+                distSel.trigger('change');
+            });
+        });
+
+        distSel.on('change', function() {
+            if(!this.value || this.value === "Loading...") return;
+            talSel.empty().append('<option>Loading...</option>').trigger('change');
+            fetch(`/auth/get_talukas/${this.value}`).then(res => res.json()).then(data => {
+                talSel.empty().append('<option value="">Select Taluka</option>');
+                data.forEach(t => talSel.append(new Option(t.name, t.id)));
+                talSel.trigger('change');
+            });
+        });
+
+        talSel.on('change', function() {
+            if(!this.value || this.value === "Loading...") return;
+            vilSel.empty().append('<option>Loading...</option>').trigger('change');
+            fetch(`/auth/get_villages/${this.value}`).then(res => res.json()).then(data => {
+                vilSel.empty().append('<option value="">Found ' + data.length + ' villages. Search...</option>');
+                data.forEach(v => vilSel.append(new Option(v.name, v.id)));
+                vilSel.trigger('change');
+            });
+        });
+
+        roleSelect.trigger('change');
+    });
+</script>
+
+</body>
+</html>

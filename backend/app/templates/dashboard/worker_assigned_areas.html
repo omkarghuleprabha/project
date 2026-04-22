@@ -1,0 +1,57 @@
+{% extends "dashboard/worker_base.html" %}
+
+{% block worker_content %}
+<div class="content-shell">
+    <div class="page-heading">
+        <div>
+            <h2>Assigned Areas</h2>
+            <p>See your assigned coverage area and current workload summary.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for area in assigned_areas %}
+        <div class="col-lg-6">
+            <div class="info-card">
+                <h5>{{ area.village_name }}</h5>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="info-label">Vehicle Number</div>
+                        <div class="info-value">{{ area.vehicle_no }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-label">Worker Status</div>
+                        <div class="info-value">
+                            <span class="badge-soft {{ area.status|replace(' ', '_')|lower }}">{{ area.status }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-label">Total Tasks</div>
+                        <div class="info-value">{{ area.total_tasks }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-label">Pending Tasks</div>
+                        <div class="info-value">{{ area.pending_tasks }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-label">In Progress</div>
+                        <div class="info-value">{{ area.in_progress_tasks }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-label">Completed</div>
+                        <div class="info-value">{{ area.completed_tasks }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="info-card">
+                <h5>No assigned area found</h5>
+                <p class="mb-0 text-muted">This worker does not have an assigned village yet.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

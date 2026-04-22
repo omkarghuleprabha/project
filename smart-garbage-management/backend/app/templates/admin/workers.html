@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card bg-dark text-white shadow-lg p-4">
+    <h3 class="text-primary mb-4">👷 Pending Worker Approvals</h3>
+    <div class="table-responsive">
+        <table class="table table-dark table-hover border-secondary">
+            <thead class="table-primary text-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for worker in workers %}
+                <tr>
+                    <td>{{ worker[1] }}</td> <td>{{ worker[2] }}</td> <td>{{ worker[5] }}</td> <td>
+                        <a href="/admin/approve_worker/{{ worker[0] }}" class="btn btn-success btn-sm">Approve ✅</a>
+                        <a href="/admin/reject_worker/{{ worker[0] }}" class="btn btn-danger btn-sm">Reject ❌</a>
+                        <a href="/admin/rent/{{ worker[0] }}" class="btn btn-warning btn-sm">Set Rent 💰</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

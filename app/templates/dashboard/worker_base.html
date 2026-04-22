@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Portal - Smart Garbage Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-start: #5b2c83;
+            --bg-end: #8f5bd6;
+            --panel-dark: #2e1450;
+            --panel-darker: #1f1038;
+            --accent: #b784ff;
+            --accent-strong: #8e44ff;
+            --accent-soft: rgba(183, 132, 255, 0.2);
+            --text-muted: #d7caec;
+            --success: #27ae60;
+            --warning: #f2c94c;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%); min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background: linear-gradient(180deg, var(--panel-dark) 0%, var(--panel-darker) 100%); min-height: 100vh; padding: 20px 0; position: fixed; width: 250px; left: 0; top: 0; color: white; overflow-y: auto; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3); z-index: 1000; }
+        .sidebar .logo { padding: 20px; text-align: center; border-bottom: 2px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
+        .sidebar .logo h4 { margin: 0; color: var(--accent); font-weight: 700; }
+        .sidebar .logo p { margin: 5px 0 0 0; font-size: 0.85rem; color: var(--text-muted); }
+        .sidebar .user-info { padding: 15px 20px; background: rgba(255, 255, 255, 0.1); margin: 0 10px 20px 10px; border-radius: 8px; }
+        .sidebar .user-avatar { width: 50px; height: 50px; background: var(--accent-strong); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin-bottom: 10px; }
+        .sidebar .user-name { font-weight: 600; margin-bottom: 4px; }
+        .sidebar .user-subtext { font-size: 0.85rem; color: var(--text-muted); }
+        .sidebar .menu { list-style: none; padding-bottom: 90px; }
+        .sidebar .menu a { display: flex; align-items: center; padding: 15px 20px; color: #ecf0f1; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; }
+        .sidebar .menu a:hover, .sidebar .menu a.active { background: var(--accent-soft); color: var(--accent); border-left-color: var(--accent); }
+        .sidebar .menu i { width: 25px; margin-right: 15px; text-align: center; }
+        .logout-btn { position: absolute; bottom: 20px; left: 0; right: 0; padding: 15px 20px; background: #5d2d91; color: white; border: none; cursor: pointer; width: 100%; transition: background 0.3s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        .logout-btn:hover { background: #45206c; }
+        .main-content { margin-left: 250px; padding: 30px; }
+        .navbar-top { background: white; padding: 15px 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 30px; }
+        .search-box { flex: 1; max-width: 420px; }
+        .search-box input { border: 2px solid #e0e0e0; border-radius: 25px; padding: 10px 20px; width: 100%; }
+        .right-section { display: flex; align-items: center; gap: 12px; }
+        .section-title { color: white; font-size: 28px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
+        .page-subtitle { color: rgba(255, 255, 255, 0.92); margin-bottom: 24px; }
+        .content-card, .stat-card, .action-card, .task-card, .info-card { background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .content-card, .info-card { padding: 24px; margin-bottom: 24px; }
+        .stat-card { padding: 20px; margin-bottom: 20px; border-top: 4px solid var(--accent-strong); }
+        .stat-card.pending { border-top-color: var(--warning); }
+        .stat-card.in-progress { border-top-color: #6c5ce7; }
+        .stat-card.completed { border-top-color: var(--success); }
+        .stat-card.rating { border-top-color: #f39c12; }
+        .stat-icon { font-size: 32px; margin-bottom: 10px; width: 60px; height: 60px; background: rgba(142, 68, 255, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--accent-strong); }
+        .stat-number { font-size: 28px; font-weight: 700; color: #2c3e50; margin: 10px 0; }
+        .stat-label { color: #7f8c8d; font-size: 14px; }
+        .action-card { padding: 28px; text-align: center; height: 100%; }
+        .action-card i { font-size: 44px; color: var(--accent-strong); margin-bottom: 12px; }
+        .action-card h5 { margin-bottom: 10px; color: #2c3e50; }
+        .action-card p { color: #7f8c8d; font-size: 14px; margin-bottom: 16px; }
+        .btn-primary { background: linear-gradient(135deg, #7f3fd4 0%, #b784ff 100%); border: none; border-radius: 25px; padding: 10px 30px; font-weight: 600; }
+        .btn-primary:hover { background: linear-gradient(135deg, #6d35bc 0%, #a76ef2 100%); }
+        .btn-success { background: linear-gradient(135deg, #6c3ec1 0%, #8e44ff 100%); border: none; }
+        .btn-success:hover { background: linear-gradient(135deg, #5d35aa 0%, #7d38e6 100%); }
+        .task-card { padding: 20px; margin-bottom: 16px; border-left: 5px solid var(--accent-strong); }
+        .task-card.completed { border-left-color: var(--success); }
+        .task-card.hidden-by-search, .mini-table tbody tr.hidden-by-search { display: none; }
+        .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
+        .task-header h6 { margin: 0; color: #2c3e50; }
+        .task-priority { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .task-priority.high { background: #f6d5ff; color: #6a1b9a; }
+        .task-priority.medium, .task-priority.normal { background: #e4d7ff; color: #5c2a9d; }
+        .task-priority.low { background: #ece7ff; color: #4c2882; }
+        .task-meta, .muted-text { color: #7f8c8d; font-size: 14px; }
+        .task-location { background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0; }
+        .task-location i { color: var(--accent-strong); margin-right: 10px; }
+        .task-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-badge.pending { background: #fff3cd; color: #856404; }
+        .status-badge.in-progress { background: #e4d7ff; color: #5c2a9d; }
+        .status-badge.completed { background: #d1e7dd; color: #0f5132; }
+        .mini-table { width: 100%; border-collapse: collapse; }
+        .mini-table th, .mini-table td { padding: 12px 10px; border-bottom: 1px solid #ececec; font-size: 14px; text-align: left; }
+        .mini-table th { color: #556; font-weight: 700; }
+        .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+        .profile-item { background: #f8f5ff; border-radius: 12px; padding: 16px; }
+        .profile-item small { display: block; color: #7f8c8d; margin-bottom: 4px; }
+        .progress { height: 25px; border-radius: 15px; background: #ecf0f1; }
+        .progress-bar { border-radius: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: width 0.4s ease; }
+        .empty-state { color: #7f8c8d; font-size: 14px; }
+        .form-control, .form-select { border: 2px solid #e0e0e0; border-radius: 8px; padding: 12px 15px; }
+        .section-anchor { scroll-margin-top: 20px; }
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; padding: 10px 0; }
+            .sidebar .logo h4, .sidebar .logo p, .sidebar .user-info, .sidebar .menu a span { display: none; }
+            .sidebar .menu a { justify-content: center; padding: 15px; }
+            .main-content { margin-left: 70px; padding: 15px; }
+            .navbar-top { flex-direction: column; align-items: stretch; }
+            .search-box { max-width: 100%; }
+            .logout-btn { position: static; margin-top: 20px; }
+            .task-header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <h4><i class="fas fa-trash-alt"></i> SGMS</h4>
+            <p>Worker Portal</p>
+        </div>
+
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="user-name">{{ session.get('worker_name', 'Worker') }}</div>
+            <div class="user-subtext">Garbage Collector</div>
+        </div>
+
+        <ul class="menu">
+            <li><a href="/worker-dashboard" class="active"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+            <li><a href="/worker/requests"><i class="fas fa-clipboard-list"></i> <span>My Requests</span></a></li>
+            <li><a href="/worker/earnings"><i class="fas fa-coins"></i> <span>Earnings</span></a></li>
+            <li><a href="/worker/profile"><i class="fas fa-user-circle"></i> <span>Profile</span></a></li>
+        </ul>
+
+        <a href="{{ url_for('auth_bp.logout') }}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> &nbsp; Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="navbar-top">
+            <div class="search-box">
+                <input type="text" placeholder="Search tasks..." class="form-control">
+            </div>
+            <div class="right-section">
+                <button class="btn btn-light"><i class="fas fa-bell"></i></button>
+                <button class="btn btn-light"><i class="fas fa-envelope"></i></button>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mb-4">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ 'warning' if category == 'message' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block worker_content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block worker_scripts %}{% endblock %}
+</body>
+</html>

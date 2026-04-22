@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taluka Admin Dashboard | Smart Garbage Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #14213d;
+            --slate: #23395b;
+            --accent: #fca311;
+            --mint: #2a9d8f;
+            --rose: #e76f51;
+            --sky: #4ea8de;
+            --paper: #f7f7f2;
+            --ink: #1f2937;
+            --muted: #6b7280;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(252, 163, 17, 0.18), transparent 28%),
+                linear-gradient(135deg, #eef2f7 0%, #f9fafb 100%);
+            color: var(--ink);
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            padding: 24px 18px;
+            background: linear-gradient(180deg, var(--navy) 0%, #0b1324 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .brand-block {
+            padding: 10px 14px 22px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 22px;
+        }
+        .brand-block h3 {
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+        .brand-block p {
+            margin: 6px 0 0;
+            color: #9fb3d1;
+            font-size: 0.92rem;
+        }
+        .profile-panel {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 22px;
+        }
+        .profile-panel .role-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(252, 163, 17, 0.16);
+            color: #ffd48a;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .profile-panel h5 {
+            margin: 14px 0 6px;
+            font-weight: 700;
+        }
+        .profile-panel p {
+            margin: 0;
+            color: #c8d4e7;
+            font-size: 0.9rem;
+        }
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #c9d4e5;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 14px;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover,
+        .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.08);
+            transform: translateX(2px);
+        }
+        .nav-link i {
+            width: 18px;
+            text-align: center;
+        }
+        .logout-link {
+            margin-top: 18px;
+            color: #ffb4a2;
+        }
+        .main {
+            margin-left: 280px;
+            padding: 28px;
+        }
+        .topbar {
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            border-radius: 22px;
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+            box-shadow: 0 12px 30px rgba(20, 33, 61, 0.08);
+            margin-bottom: 24px;
+        }
+        .topbar h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 800;
+        }
+        .topbar p {
+            margin: 6px 0 0;
+            color: var(--muted);
+        }
+        .scope-pill {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(42, 157, 143, 0.12);
+            color: #166d64;
+            font-weight: 700;
+        }
+        .flash-shell .alert {
+            border-radius: 16px;
+            margin-bottom: 18px;
+        }
+        .content-card {
+            background: rgba(255,255,255,0.92);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: 0 12px 26px rgba(20, 33, 61, 0.06);
+            height: 100%;
+        }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .section-head h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+        .section-head p {
+            margin: 4px 0 0;
+            color: var(--muted);
+        }
+        .metric-card {
+            color: white;
+            border-radius: 22px;
+            padding: 22px;
+            min-height: 170px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(20, 33, 61, 0.12);
+        }
+        .metric-card::after {
+            content: "";
+            position: absolute;
+            inset: auto -22px -26px auto;
+            width: 110px;
+            height: 110px;
+            background: rgba(255,255,255,0.13);
+            border-radius: 50%;
+        }
+        .metric-card h4 {
+            margin: 14px 0 8px;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        .metric-card p {
+            margin: 0;
+            opacity: 0.92;
+        }
+        .bg-navy { background: linear-gradient(135deg, #14213d, #23395b); }
+        .bg-amber { background: linear-gradient(135deg, #fca311, #ffba49); color: #3b2b00; }
+        .bg-mint { background: linear-gradient(135deg, #2a9d8f, #52b69a); }
+        .bg-rose { background: linear-gradient(135deg, #e76f51, #f4a261); }
+        .mini-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .mini-badge.pending { background: #fef3c7; color: #92400e; }
+        .mini-badge.assigned { background: #ede9fe; color: #6d28d9; }
+        .mini-badge.in_progress { background: #dbeafe; color: #1d4ed8; }
+        .mini-badge.completed { background: #dcfce7; color: #166534; }
+        .mini-badge.high { background: #fee2e2; color: #b91c1c; }
+        .mini-badge.normal { background: #ede9fe; color: #6d28d9; }
+        .mini-badge.urgent { background: #ffe4e6; color: #be123c; }
+        .mini-badge.active { background: #dcfce7; color: #166534; }
+        .mini-badge.on_leave { background: #fef3c7; color: #92400e; }
+        .mini-badge.inactive { background: #e5e7eb; color: #374151; }
+        .table thead th {
+            border-bottom: none;
+            color: var(--muted);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .table > :not(caption) > * > * {
+            padding: 14px 10px;
+        }
+        .progress-shell {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-shell span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--sky), var(--mint));
+        }
+        .empty-note {
+            color: var(--muted);
+            text-align: center;
+            padding: 32px 14px;
+        }
+        @media (max-width: 991px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+            .main {
+                margin-left: 0;
+                padding: 18px;
+            }
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        .session-timer {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            min-width: 170px;
+            padding: 0.8rem 1rem;
+            border-radius: 16px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        }
+        .session-timer-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+        .session-timer-value {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+            font-variant-numeric: tabular-nums;
+        }
+        .session-timer.expiring {
+            background: #fff7ed;
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+        .session-timer.expiring .session-timer-label,
+        .session-timer.expiring .session-timer-value {
+            color: #c2410c;
+        }
+        .topbar-actions,
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 991px) {
+            .topbar-actions,
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .session-timer {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand-block">
+            <h3><i class="fas fa-shield-halved me-2"></i>SmartPro</h3>
+            <p>Taluka command center</p>
+        </div>
+
+        <div class="profile-panel">
+            <div class="role-tag"><i class="fas fa-user-tie"></i> Taluka Admin</div>
+            <h5>{{ admin_profile.name if admin_profile else session.get('user_name', 'Admin') }}</h5>
+            <p>{{ admin_profile.taluka_name if admin_profile else 'Taluka' }}, {{ admin_profile.district_name if admin_profile else 'District' }}</p>
+        </div>
+
+        <nav class="nav-group">
+            <a href="{{ url_for('auth_bp.taluka_dashboard') }}" class="nav-link {% if worker_page == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="{{ url_for('auth_bp.taluka_workers') }}" class="nav-link {% if worker_page == 'workers' %}active{% endif %}">
+                <i class="fas fa-users"></i> Workers
+            </a>
+            <a href="{{ url_for('auth_bp.taluka_complaints') }}" class="nav-link {% if worker_page == 'complaints' %}active{% endif %}">
+                <i class="fas fa-file-circle-exclamation"></i> Complaints
+            </a>
+            <a href="{{ url_for('auth_bp.taluka_villages') }}" class="nav-link {% if worker_page == 'villages' %}active{% endif %}">
+                <i class="fas fa-map-location-dot"></i> Villages
+            </a>
+            <a href="{{ url_for('auth_bp.taluka_profile') }}" class="nav-link {% if worker_page == 'profile' %}active{% endif %}">
+                <i class="fas fa-id-card"></i> Profile
+            </a>
+            <a href="{{ url_for('auth_bp.logout') }}" class="nav-link logout-link">
+                <i class="fas fa-right-from-bracket"></i> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <h1>{% block page_title %}Taluka Dashboard{% endblock %}</h1>
+                <p>{% block page_subtitle %}Monitor complaints, villages, workers, and service performance across your taluka.{% endblock %}</p>
+            </div>
+            <div class="topbar-actions">
+                <div class="scope-pill">
+                    <i class="fas fa-location-crosshairs"></i>
+                    {{ admin_profile.taluka_name if admin_profile else 'Taluka' }} Scope
+                </div>
+                {% include "dashboard/_session_timer.html" %}
+            </div>
+        </div>
+
+        <div class="flash-shell">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block taluka_content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% include "dashboard/_session_timer_script.html" %}
+    {% block taluka_scripts %}{% endblock %}
+</body>
+</html>

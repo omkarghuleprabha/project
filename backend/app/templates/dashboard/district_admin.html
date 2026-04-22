@@ -1,0 +1,1013 @@
+{% extends "dashboard/district_base.html" %}
+
+{% block page_title %}District Overview{% endblock %}
+{% block page_subtitle %}A live command view of complaints, requests, revenue, and worker performance across {{ district_profile.district_name }}.{% endblock %}
+
+{% block district_head %}
+<style>
+    .briefing-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 1rem;
+        align-items: stretch;
+    }
+    .summary-strip,
+    .insight-grid {
+        display: grid;
+        gap: 0.85rem;
+    }
+    .summary-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 1.1rem;
+    }
+    .summary-tile,
+    .insight-card,
+    .hotspot-item,
+    .escalation-card,
+    .worker-row,
+    .task-item {
+        border-radius: 18px;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+    }
+    .summary-tile {
+        padding: 1rem 1.05rem;
+        background: linear-gradient(180deg, rgba(20, 33, 61, 0.03), rgba(20, 33, 61, 0.01));
+    }
+    .summary-tile span,
+    .insight-card span,
+    .hotspot-meta,
+    .table-note {
+        color: var(--muted);
+        font-size: 0.84rem;
+    }
+    .summary-tile strong,
+    .insight-card strong {
+        display: block;
+        margin-top: 0.3rem;
+        font-size: 1.4rem;
+    }
+    .hero-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    .insight-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .insight-card {
+        padding: 1rem;
+        background: white;
+        box-shadow: 0 10px 22px rgba(20, 33, 61, 0.05);
+    }
+    .insight-card i {
+        font-size: 1.05rem;
+        margin-bottom: 0.75rem;
+    }
+    .insight-card.mint {
+        background: linear-gradient(180deg, rgba(42, 157, 143, 0.1), rgba(255, 255, 255, 0.96));
+    }
+    .insight-card.rose {
+        background: linear-gradient(180deg, rgba(231, 111, 81, 0.12), rgba(255, 255, 255, 0.96));
+    }
+    .insight-card.amber {
+        background: linear-gradient(180deg, rgba(252, 163, 17, 0.12), rgba(255, 255, 255, 0.96));
+    }
+    .insight-card.navy {
+        background: linear-gradient(180deg, rgba(20, 33, 61, 0.12), rgba(255, 255, 255, 0.96));
+    }
+    .chart-shell {
+        min-height: 320px;
+        position: relative;
+    }
+    .taluka-table-filter {
+        min-width: 220px;
+    }
+    .taluka-table tbody tr[hidden] {
+        display: none;
+    }
+    .completion-cell {
+        min-width: 170px;
+    }
+    .completion-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.4rem;
+        font-size: 0.84rem;
+    }
+    .hotspot-list,
+    .escalation-list,
+    .worker-list,
+    .task-list {
+        display: grid;
+        gap: 0.85rem;
+    }
+    .hotspot-item,
+    .worker-row,
+    .task-item {
+        padding: 1rem;
+        background: linear-gradient(180deg, rgba(20, 33, 61, 0.03), rgba(20, 33, 61, 0.01));
+    }
+    .hotspot-head,
+    .worker-top,
+    .task-top,
+    .escalation-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+    .hotspot-location,
+    .task-title,
+    .worker-name,
+    .escalation-title {
+        font-weight: 700;
+    }
+    .worker-meta,
+    .task-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 0.55rem;
+    }
+    .worker-meta span,
+    .task-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.83rem;
+        color: var(--muted);
+    }
+    .escalation-card {
+        padding: 1rem 1.05rem;
+        background: linear-gradient(180deg, rgba(231, 111, 81, 0.07), rgba(255, 255, 255, 0.96));
+    }
+    .escalation-card.critical {
+        border-color: rgba(185, 28, 28, 0.22);
+        background: linear-gradient(180deg, rgba(254, 226, 226, 0.9), rgba(255, 255, 255, 0.98));
+    }
+    .escalation-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 0.7rem 0 0.6rem;
+        color: var(--muted);
+        font-size: 0.84rem;
+    }
+    .escalation-copy {
+        margin: 0;
+        color: #334155;
+        line-height: 1.6;
+    }
+    .ops-badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 0.8rem;
+    }
+    .task-item .progress-shell,
+    .worker-row .progress-shell {
+        margin-top: 0.7rem;
+    }
+    .revenue-table .table td,
+    .revenue-table .table th {
+        white-space: nowrap;
+    }
+    .village-chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.45rem;
+    }
+    .village-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+        background: rgba(20, 33, 61, 0.08);
+        color: #334155;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    .detail-metric {
+        display: grid;
+        gap: 0.3rem;
+    }
+    .detail-metric strong {
+        font-size: 1rem;
+    }
+    .detail-metric span {
+        color: var(--muted);
+        font-size: 0.82rem;
+    }
+    .admin-directory {
+        display: grid;
+        gap: 0.9rem;
+    }
+    .admin-directory-card {
+        padding: 1rem 1.05rem;
+        background: linear-gradient(180deg, rgba(20, 33, 61, 0.03), rgba(20, 33, 61, 0.01));
+        border-radius: 18px;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+    }
+    .admin-directory-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.8rem;
+        align-items: flex-start;
+    }
+    .admin-directory-name {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    .admin-directory-meta {
+        margin-top: 0.35rem;
+        color: var(--muted);
+        font-size: 0.84rem;
+        line-height: 1.6;
+    }
+    .admin-directory-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.9rem;
+    }
+    .section-tools {
+        display: flex;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+    }
+    @media (max-width: 1199px) {
+        .briefing-shell {
+            grid-template-columns: 1fr;
+        }
+    }
+    @media (max-width: 991px) {
+        .summary-strip,
+        .insight-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+    @media (max-width: 576px) {
+        .summary-strip,
+        .insight-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block district_content %}
+<div id="overview" class="section-anchor"></div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-navy">
+            <div class="metric-icon"><i class="fas fa-map-location-dot"></i></div>
+            <h4>{{ dashboard_stats.talukas }}</h4>
+            <p>Talukas in district scope</p>
+            <small>{{ dashboard_stats.admin_coverage_rate }}% admin coverage</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-sky">
+            <div class="metric-icon"><i class="fas fa-house-flag"></i></div>
+            <h4>{{ dashboard_stats.villages }}</h4>
+            <p>Villages under monitoring</p>
+            <small>{{ dashboard_stats.citizens }} registered citizens</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-mint">
+            <div class="metric-icon"><i class="fas fa-users-gear"></i></div>
+            <h4>{{ dashboard_stats.active_workers }}</h4>
+            <p>Workers active today</p>
+            <small>{{ dashboard_stats.workers }} workers in total</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-rose">
+            <div class="metric-icon"><i class="fas fa-file-circle-exclamation"></i></div>
+            <h4>{{ dashboard_stats.escalated_open }}</h4>
+            <p>Open escalations over 48h</p>
+            <small>{{ dashboard_stats.complaints_pending }} complaints still pending</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-amber">
+            <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
+            <h4>{{ dashboard_stats.service_completion_rate }}%</h4>
+            <p>Overall service completion</p>
+            <small>{{ dashboard_stats.open_work }} active items remain</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-slate">
+            <div class="metric-icon"><i class="fas fa-wallet"></i></div>
+            <h4>Rs {{ "{:,.0f}".format(dashboard_stats.completed_value or 0) }}</h4>
+            <p>Completed service value</p>
+            <small>{{ dashboard_stats.requests_completed }} requests completed</small>
+        </div>
+    </div>
+</div>
+
+<div class="content-card mb-4">
+    <div class="section-head">
+        <div>
+            <h3>District Command Brief</h3>
+            <p>Use this page as a control room for service pressure, taluka performance, revenue health, and unresolved citizen issues.</p>
+        </div>
+    </div>
+
+    <div class="briefing-shell">
+        <div>
+            <div class="summary-strip">
+                <div class="summary-tile">
+                    <span>Open Complaints</span>
+                    <strong>{{ dashboard_stats.complaints_pending + dashboard_stats.complaints_in_progress }}</strong>
+                </div>
+                <div class="summary-tile">
+                    <span>Open Requests</span>
+                    <strong>{{ dashboard_stats.requests_pending + dashboard_stats.requests_in_progress }}</strong>
+                </div>
+                <div class="summary-tile">
+                    <span>Pending Field Tasks</span>
+                    <strong>{{ dashboard_stats.tasks_pending }}</strong>
+                </div>
+                <div class="summary-tile">
+                    <span>Taluka Admins</span>
+                    <strong>{{ dashboard_stats.taluka_admins }}/{{ dashboard_stats.talukas }}</strong>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="#map" class="btn btn-dark btn-sm"><i class="fas fa-map me-2"></i>Open District Map</a>
+                <a href="#escalations" class="btn btn-outline-dark btn-sm"><i class="fas fa-bell me-2"></i>Review Escalations</a>
+                <a href="{{ url_for('auth_bp.district_talukas_page') }}" class="btn btn-outline-dark btn-sm"><i class="fas fa-map me-2"></i>View Talukas</a>
+                <a href="{{ url_for('auth_bp.district_taluka_admins_page') }}" class="btn btn-outline-dark btn-sm"><i class="fas fa-user-tie me-2"></i>View Taluka Admins</a>
+                <a href="#revenue" class="btn btn-outline-dark btn-sm"><i class="fas fa-wallet me-2"></i>Jump to Revenue</a>
+            </div>
+        </div>
+
+        <div class="insight-grid">
+            {% for insight in district_insights %}
+            <div class="insight-card {{ insight.tone }}">
+                <i class="fas {{ insight.icon }}"></i>
+                <span>{{ insight.title }}</span>
+                <strong>{{ insight.value }}</strong>
+                <div class="table-note">{{ insight.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="map" class="section-anchor"></div>
+{% include "dashboard/_district_scope_map.html" %}
+
+<div id="performance" class="section-anchor"></div>
+<div class="row g-4 mb-4">
+    <div class="col-xl-7">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Service Mix</h3>
+                    <p>Complaint, request, and task movement across the district.</p>
+                </div>
+            </div>
+            <div class="chart-shell">
+                <canvas id="districtServiceMixChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-5">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Taluka Completion</h3>
+                    <p>Compare completion rate with open backlog by taluka.</p>
+                </div>
+            </div>
+            <div class="chart-shell">
+                <canvas id="districtTalukaCompletionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xxl-8">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Taluka Performance Board</h3>
+                    <p>District-wide snapshot of workload, coverage, completion, and revenue.</p>
+                </div>
+                <select class="form-select form-select-sm taluka-table-filter" id="talukaPerformanceFilter">
+                    <option value="all">Show all talukas</option>
+                    <option value="healthy">Show healthy talukas</option>
+                    <option value="attention">Show needs-attention talukas</option>
+                    <option value="critical">Show critical talukas</option>
+                </select>
+            </div>
+            <div class="table-responsive taluka-table">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Taluka</th>
+                            <th>Admin</th>
+                            <th>Villages</th>
+                            <th>Workers</th>
+                            <th>Completion</th>
+                            <th>Open Work</th>
+                            <th>Revenue</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for taluka in taluka_performance %}
+                        <tr data-performance-band="{{ taluka.band_class }}">
+                            <td>
+                                <strong>{{ taluka.name }}</strong><br>
+                                <small class="text-muted">{{ taluka.citizens }} citizens tracked</small>
+                            </td>
+                            <td>
+                                {{ taluka.admin_name }}<br>
+                                <small class="text-muted">{% if taluka.admin_assigned %}Taluka admin assigned{% else %}Admin not assigned{% endif %}</small>
+                            </td>
+                            <td>{{ taluka.villages }}</td>
+                            <td>{{ taluka.workers }}</td>
+                            <td class="completion-cell">
+                                <div class="completion-meta">
+                                    <span>{{ taluka.completed_services }} / {{ taluka.total_services }} services</span>
+                                    <strong>{{ taluka.completion_rate }}%</strong>
+                                </div>
+                                <div class="progress-shell">
+                                    <span data-progress-width="{{ taluka.completion_rate }}"></span>
+                                </div>
+                            </td>
+                            <td>{{ taluka.open_work }}</td>
+                            <td>Rs {{ "{:,.0f}".format(taluka.completed_value or 0) }}</td>
+                            <td><span class="mini-badge {{ taluka.band_class }}">{{ taluka.band_label }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="8" class="empty-note">No taluka performance data is available yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xxl-4">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Complaint Hotspots</h3>
+                    <p>Villages and localities carrying the highest complaint pressure.</p>
+                </div>
+            </div>
+            <div class="hotspot-list">
+                {% for hotspot in hotspots %}
+                <div class="hotspot-item">
+                    <div class="hotspot-head">
+                        <div>
+                            <div class="hotspot-location">{{ hotspot.location_label }}</div>
+                            <div class="hotspot-meta">{{ hotspot.total_complaints }} complaints logged overall</div>
+                        </div>
+                        <span class="mini-badge {{ hotspot.level_class }}">{{ hotspot.level_label }}</span>
+                    </div>
+                    <div class="ops-badge-row">
+                        <span class="mini-badge pending">{{ hotspot.open_complaints }} open</span>
+                        <span class="mini-badge high">{{ hotspot.high_priority_count }} high priority</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-note">No hotspot data is available yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="escalations" class="section-anchor"></div>
+<div class="row g-4 mb-4">
+    <div class="col-xxl-7">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Escalation Queue</h3>
+                    <p>Complaints still open after 48 hours, sorted by urgency.</p>
+                </div>
+            </div>
+            <div class="escalation-list">
+                {% for escalation in escalations %}
+                <div class="escalation-card {{ escalation.severity_class }}">
+                    <div class="escalation-head">
+                        <div>
+                            <div class="escalation-title">#{{ escalation.id }} {{ escalation.title }}</div>
+                            <div class="table-note">{{ escalation.taluka }} • {{ escalation.village }}</div>
+                        </div>
+                        <span class="mini-badge {{ escalation.status_class }}">{{ escalation.status }}</span>
+                    </div>
+                    <div class="escalation-meta">
+                        <span><i class="fas fa-clock"></i>{{ escalation.age_label }}</span>
+                        <span><i class="fas fa-user"></i>{{ escalation.citizen_name }}</span>
+                        <span><i class="fas fa-user-shield"></i>{{ escalation.admin_name }}</span>
+                        <span><i class="fas fa-truck"></i>{{ escalation.worker_name }}</span>
+                    </div>
+                    <p class="escalation-copy">{{ escalation.description or 'No complaint description was provided.' }}</p>
+                </div>
+                {% else %}
+                <div class="empty-note">No escalations are open right now.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xxl-5">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Top Worker Performance</h3>
+                    <p>District leaders ranked by completed assignments.</p>
+                </div>
+            </div>
+            <div class="worker-list">
+                {% for worker in worker_summary %}
+                <div class="worker-row">
+                    <div class="worker-top">
+                        <div>
+                            <div class="worker-name">{{ worker.name }}</div>
+                            <div class="table-note">{{ worker.taluka_name }} • {{ worker.village_name }}</div>
+                        </div>
+                        <span class="mini-badge {{ worker.status_key }}">{{ worker.status }}</span>
+                    </div>
+                    <div class="worker-meta">
+                        <span><i class="fas fa-circle-check"></i>{{ worker.completed_tasks or 0 }} completed</span>
+                        <span><i class="fas fa-list-check"></i>{{ worker.total_tasks or 0 }} total</span>
+                        <span><i class="fas fa-hourglass-half"></i>{{ worker.open_tasks or 0 }} open</span>
+                    </div>
+                    <div class="progress-shell">
+                        <span data-progress-width="{{ worker.completion_rate or 0 }}"></span>
+                    </div>
+                    <div class="table-note mt-2">{{ worker.completion_rate or 0 }}% assignment completion rate</div>
+                </div>
+                {% else %}
+                <div class="empty-note">No worker activity is available yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="operations" class="section-anchor"></div>
+<div class="row g-4 mb-4">
+    <div class="col-xl-6">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Recent Complaints</h3>
+                    <p>Latest citizen reports across the district.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Complaint</th>
+                            <th>Citizen</th>
+                            <th>Taluka</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in recent_complaints %}
+                        <tr>
+                            <td>
+                                <strong>#{{ complaint.id }} {{ complaint.title }}</strong><br>
+                                <small class="text-muted">{{ complaint.village }} • {{ complaint.created_at_text }}</small>
+                            </td>
+                            <td>{{ complaint.citizen_name }}</td>
+                            <td>{{ complaint.taluka }}</td>
+                            <td><span class="mini-badge {{ complaint.status_class }}">{{ complaint.status }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="empty-note">No complaints are available.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Recent Pickup Requests</h3>
+                    <p>Latest pickup activity and worker assignment status.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Request</th>
+                            <th>Citizen</th>
+                            <th>Taluka</th>
+                            <th>Worker</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in recent_requests %}
+                        <tr>
+                            <td>
+                                <strong>#{{ request.id }} {{ request.garbage_type }}</strong><br>
+                                <small class="text-muted">Rs {{ "{:,.0f}".format(request.amount or 0) }} • {{ request.created_at_text }}</small>
+                            </td>
+                            <td>{{ request.citizen_name }}</td>
+                            <td>{{ request.taluka_name }}</td>
+                            <td>{{ request.worker_name }}</td>
+                            <td><span class="mini-badge {{ request.status }}">{{ request.status_label }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="empty-note">No pickup requests are available.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="talukas" class="section-anchor"></div>
+<div class="content-card mb-4">
+    <div class="section-head">
+        <div>
+            <h3>Talukas in This District</h3>
+            <p>District-level view of each taluka, including assigned admin, villages, workers, and service load.</p>
+        </div>
+        <div class="section-tools">
+            <span class="mini-badge good">{{ district_talukas|length }} talukas</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Taluka</th>
+                    <th>Taluka Admin</th>
+                    <th>Coverage</th>
+                    <th>Requests</th>
+                    <th>Complaints</th>
+                    <th>Progress</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for taluka in district_talukas %}
+                <tr>
+                    <td>
+                        <strong>{{ taluka.name }}</strong><br>
+                        <small class="text-muted">{{ taluka.citizens }} citizens tracked</small>
+                        <div class="village-chip-list">
+                            {% for village_name in taluka.villages_list %}
+                            <span class="village-chip">{{ village_name }}</span>
+                            {% endfor %}
+                            {% if taluka.villages_more_count %}
+                            <span class="village-chip">+{{ taluka.villages_more_count }} more</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {{ taluka.admin_name }}<br>
+                        <small class="text-muted">
+                            {% if taluka.admin_assigned %}
+                            {{ taluka.admin_email or 'Email not available' }} • {{ taluka.admin_phone or 'Phone not available' }}
+                            {% else %}
+                            No taluka admin assigned yet
+                            {% endif %}
+                        </small>
+                    </td>
+                    <td>
+                        <div class="detail-metric">
+                            <strong>{{ taluka.villages }} villages</strong>
+                            <span>{{ taluka.workers }} workers covering this taluka</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="detail-metric">
+                            <strong>{{ taluka.completed_requests }}/{{ taluka.total_requests }}</strong>
+                            <span>completed service requests</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="detail-metric">
+                            <strong>{{ taluka.open_complaints }} open</strong>
+                            <span>{{ taluka.total_complaints }} total complaints</span>
+                        </div>
+                    </td>
+                    <td class="completion-cell">
+                        <div class="completion-meta">
+                            <span>Request completion</span>
+                            <strong>{{ taluka.progress }}%</strong>
+                        </div>
+                        <div class="progress-shell">
+                            <span data-progress-width="{{ taluka.progress }}"></span>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('auth_bp.district_taluka_detail', taluka_id=taluka.id) }}" class="btn btn-outline-dark btn-sm">Open Taluka</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="empty-note">No taluka coverage data is available for this district yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="taluka-admins" class="section-anchor"></div>
+<div class="content-card mb-4">
+    <div class="section-head">
+        <div>
+            <h3>Taluka Admin Directory</h3>
+            <p>See every taluka admin in the district together with their villages, workers, and district task load.</p>
+        </div>
+        <div class="section-tools">
+            <span class="mini-badge excellent">{{ district_taluka_admins|length }} admins</span>
+        </div>
+    </div>
+    <div class="admin-directory">
+        {% for admin in district_taluka_admins %}
+        <div class="admin-directory-card">
+            <div class="admin-directory-head">
+                <div>
+                    <div class="admin-directory-name">{{ admin.name }}</div>
+                    <div class="table-note">{{ admin.taluka_name }}</div>
+                    <div class="admin-directory-meta">
+                        <div><i class="fas fa-envelope me-2"></i>{{ admin.email or 'Email not available' }}</div>
+                        <div><i class="fas fa-phone me-2"></i>{{ admin.phone or 'Phone not available' }}</div>
+                    </div>
+                </div>
+                <span class="mini-badge active">Taluka Admin</span>
+            </div>
+            <div class="admin-directory-stats">
+                <div class="detail-metric">
+                    <strong>{{ admin.villages }}</strong>
+                    <span>villages</span>
+                </div>
+                <div class="detail-metric">
+                    <strong>{{ admin.workers }}</strong>
+                    <span>workers</span>
+                </div>
+                <div class="detail-metric">
+                    <strong>{{ admin.pending_district_tasks }}</strong>
+                    <span>pending district tasks</span>
+                </div>
+            </div>
+            <div class="village-chip-list">
+                {% for village_name in admin.villages_list %}
+                <span class="village-chip">{{ village_name }}</span>
+                {% endfor %}
+                {% if admin.villages_more_count %}
+                <span class="village-chip">+{{ admin.villages_more_count }} more</span>
+                {% endif %}
+            </div>
+            <div class="table-note mt-3">
+                {{ admin.completed_district_tasks }} completed of {{ admin.total_district_tasks }} district-assigned tasks.
+            </div>
+            <div class="mt-3">
+                <a href="{{ url_for('auth_bp.district_taluka_admin_detail', taluka_admin_id=admin.id) }}" class="btn btn-outline-dark btn-sm">View Details</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-note">No taluka admins are assigned in this district yet.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="revenue" class="section-anchor"></div>
+<div class="row g-4">
+    <div class="col-xxl-7">
+        <div class="content-card revenue-table">
+            <div class="section-head">
+                <div>
+                    <h3>Revenue by Taluka</h3>
+                    <p>Completed pickup value and operational conversion by taluka.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Taluka</th>
+                            <th>Completed Requests</th>
+                            <th>Completed Value</th>
+                            <th>Completion</th>
+                            <th>Open Work</th>
+                            <th>Admin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for taluka in revenue_rows %}
+                        <tr>
+                            <td>
+                                <strong>{{ taluka.name }}</strong><br>
+                                <small class="text-muted">{{ taluka.total_services }} total tracked services</small>
+                            </td>
+                            <td>{{ taluka.completed_requests }}</td>
+                            <td>Rs {{ "{:,.0f}".format(taluka.completed_value or 0) }}</td>
+                            <td>{{ taluka.completion_rate }}%</td>
+                            <td>{{ taluka.open_work }}</td>
+                            <td>{{ taluka.admin_name }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6" class="empty-note">No revenue data is available yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xxl-5">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Recent Field Tasks</h3>
+                    <p>Manual work assigned across talukas and villages.</p>
+                </div>
+            </div>
+            <div class="task-list">
+                {% for task in recent_assigned_tasks %}
+                <div class="task-item">
+                    <div class="task-top">
+                        <div>
+                            <div class="task-title">{{ task.description }}</div>
+                            <div class="table-note">{{ task.location_name }} • {{ task.taluka_name }}</div>
+                        </div>
+                        <span class="mini-badge {{ task.status }}">{{ task.status_label }}</span>
+                    </div>
+                    <div class="task-meta">
+                        <span><i class="fas fa-user"></i>{{ task.worker_name }}</span>
+                        <span><i class="fas fa-calendar-days"></i>{{ task.assigned_at_text }}</span>
+                        <span><i class="fas fa-flag"></i>{{ task.priority|title }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-note">No field tasks have been assigned yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block district_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% include "dashboard/_district_scope_map_script.html" %}
+<script id="districtChartData" type="application/json">{{ chart_data|tojson }}</script>
+<script>
+(function () {
+    document.querySelectorAll('[data-progress-width]').forEach((node) => {
+        const rawValue = Number(node.getAttribute('data-progress-width') || 0);
+        const safeValue = Number.isFinite(rawValue) ? Math.max(0, Math.min(rawValue, 100)) : 0;
+        node.style.width = `${safeValue}%`;
+    });
+
+    const chartDataNode = document.getElementById('districtChartData');
+    let chartData = {};
+
+    try {
+        chartData = JSON.parse(chartDataNode ? chartDataNode.textContent || '{}' : '{}');
+    } catch (error) {
+        console.warn('Unable to parse district chart data.', error);
+    }
+
+    const serviceChartNode = document.getElementById('districtServiceMixChart');
+    if (serviceChartNode && typeof Chart !== 'undefined') {
+        new Chart(serviceChartNode, {
+            type: 'bar',
+            data: {
+                labels: (chartData.service_mix && chartData.service_mix.labels) || ['Pending', 'In Progress', 'Completed'],
+                datasets: [
+                    {
+                        label: 'Complaints',
+                        data: (chartData.service_mix && chartData.service_mix.complaints) || [0, 0, 0],
+                        backgroundColor: ['#fca311', '#4ea8de', '#2a9d8f'],
+                        borderRadius: 10,
+                    },
+                    {
+                        label: 'Requests',
+                        data: (chartData.service_mix && chartData.service_mix.requests) || [0, 0, 0],
+                        backgroundColor: ['#ffd166', '#89c2d9', '#52b69a'],
+                        borderRadius: 10,
+                    },
+                    {
+                        label: 'Field Tasks',
+                        data: (chartData.service_mix && chartData.service_mix.tasks) || [0, 0, 0],
+                        backgroundColor: ['#f4a261', '#cbd5e1', '#3a506b'],
+                        borderRadius: 10,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 },
+                    },
+                },
+            },
+        });
+    }
+
+    const talukaChartNode = document.getElementById('districtTalukaCompletionChart');
+    if (talukaChartNode && typeof Chart !== 'undefined') {
+        new Chart(talukaChartNode, {
+            data: {
+                labels: (chartData.taluka_performance && chartData.taluka_performance.labels) || [],
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Completion %',
+                        data: (chartData.taluka_performance && chartData.taluka_performance.completion) || [],
+                        backgroundColor: '#14213d',
+                        borderRadius: 12,
+                        yAxisID: 'y',
+                    },
+                    {
+                        type: 'line',
+                        label: 'Open Work',
+                        data: (chartData.taluka_performance && chartData.taluka_performance.open_work) || [],
+                        borderColor: '#e76f51',
+                        backgroundColor: 'rgba(231, 111, 81, 0.14)',
+                        tension: 0.35,
+                        fill: true,
+                        yAxisID: 'y1',
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 100,
+                        position: 'left',
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        ticks: { precision: 0 },
+                    },
+                },
+            },
+        });
+    }
+
+    const filterNode = document.getElementById('talukaPerformanceFilter');
+    const talukaRows = Array.from(document.querySelectorAll('[data-performance-band]'));
+    if (filterNode && talukaRows.length) {
+        const matchesFilter = (row, mode) => {
+            const band = row.dataset.performanceBand || '';
+            if (mode === 'healthy') {
+                return band === 'excellent' || band === 'good';
+            }
+            if (mode === 'attention') {
+                return band === 'attention';
+            }
+            if (mode === 'critical') {
+                return band === 'critical';
+            }
+            return true;
+        };
+
+        const applyFilter = () => {
+            const mode = filterNode.value || 'all';
+            talukaRows.forEach((row) => {
+                row.hidden = !matchesFilter(row, mode);
+            });
+        };
+
+        filterNode.addEventListener('change', applyFilter);
+        applyFilter();
+    }
+})();
+</script>
+{% endblock %}

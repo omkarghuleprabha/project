@@ -1,0 +1,18 @@
+# Virtual environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Database backups
+*.sql
+
+# OS files
+.DS_Store
+Thumbs.db
+smart-garbage-management/import_data.py
