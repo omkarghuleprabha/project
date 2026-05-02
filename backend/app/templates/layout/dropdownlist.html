@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Village Selector</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 30px;
+      background: #f4f4f4;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      width: 400px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px #ccc;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    h2 {
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Village Selector</h2>
+
+  <!-- STATE -->
+  <label>State</label>
+  <select id="state">
+    <option value="1">Maharashtra</option>
+  </select>
+
+  <!-- DISTRICT -->
+  <label>District</label>
+  <select id="district">
+    <option>Loading...</option>
+  </select>
+
+  <!-- TALUKA -->
+  <label>Taluka</label>
+  <select id="taluka">
+    <option>Select District First</option>
+  </select>
+
+  <!-- VILLAGE -->
+  <label>Village</label>
+  <select id="village">
+    <option>Select Taluka First</option>
+  </select>
+</div>
+
+<script>
+const API = "http://localhost:5000"; // change if needed
+
+// ======================
+// LOAD DISTRICTS
+// ======================
+async function loadDistricts() {
+  let res = await fetch(`${API}/districts`);
+  let data = await res.json();
+
+  let district = document.getElementById("district");
+  district.innerHTML = "<option value=''>Select District</option>";
+
+  data.forEach(d => {
+    district.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+  });
+}
+
+// ======================
+// LOAD TALUKAS
+// ======================
+async function loadTalukas(districtId) {
+  let res = await fetch(`${API}/talukas?district_id=${districtId}`);
+  let data = await res.json();
+
+  let taluka = document.getElementById("taluka");
+  taluka.innerHTML = "<option value=''>Select Taluka</option>";
+
+  data.forEach(t => {
+    taluka.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+  });
+}
+
+// ======================
+// LOAD VILLAGES
+// ======================
+async function loadVillages(talukaId) {
+  let res = await fetch(`${API}/villages?taluka_id=${talukaId}`);
+  let data = await res.json();
+
+  let village = document.getElementById("village");
+  village.innerHTML = "<option value=''>Select Village</option>";
+
+  data.forEach(v => {
+    village.innerHTML += `<option value="${v.id}">${v.name}</option>`;
+  });
+}
+
+// ======================
+// EVENTS
+// ======================
+document.getElementById("district").addEventListener("change", function () {
+  loadTalukas(this.value);
+});
+
+document.getElementById("taluka").addEventListener("change", function () {
+  loadVillages(this.value);
+});
+
+// ======================
+// INIT
+// ======================
+loadDistricts();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+{% extends "dashboard/district_base.html" %}
+
+{% block page_title %}District Reports{% endblock %}
+{% block page_subtitle %}Preview and export district-wide, taluka-wise, or village-wise reporting packs for {{ district_profile.district_name }}.{% endblock %}
+
+{% block district_head %}
+{% include "dashboard/_report_center_styles.html" %}
+{% endblock %}
+
+{% block district_content %}
+{% include "dashboard/_report_center_content.html" %}
+{% endblock %}
+
+{% block district_scripts %}
+{% include "dashboard/_report_center_script.html" %}
+{% endblock %}

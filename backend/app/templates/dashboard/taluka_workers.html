@@ -35,9 +35,10 @@
                     <th>Village</th>
                     <th>Contact</th>
                     <th>Status</th>
+                    <th>Verification</th>
                     <th>Tasks</th>
                     <th>Completed</th>
-                    <th>Assign Task</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,24 +51,49 @@
                     <td>{{ worker.village_name or 'Not assigned' }}</td>
                     <td>{{ worker.phone }}</td>
                     <td><span class="mini-badge {{ worker.status|replace(' ', '_')|lower }}">{{ worker.status }}</span></td>
+                    <td>
+                        <span class="mini-badge {{ worker.verification_status }}">{{ worker.verification_status_label }}</span><br>
+                        <small class="text-muted">Aadhaar: {{ worker.aadhaar_no or 'Not added' }}</small>
+                        <div class="d-flex gap-2 flex-wrap mt-2">
+                            {% if worker.has_aadhaar_photo %}
+                            <a href="{{ worker.aadhaar_photo_url }}" class="btn btn-outline-dark btn-sm" target="_blank">Aadhaar Photo</a>
+                            {% endif %}
+                            {% if worker.has_selfie_photo %}
+                            <a href="{{ worker.selfie_photo_url }}" class="btn btn-outline-dark btn-sm" target="_blank">Selfie</a>
+                            {% endif %}
+                        </div>
+                        {% if worker.verification_notes %}
+                        <small class="text-muted d-block mt-2">{{ worker.verification_notes }}</small>
+                        {% endif %}
+                    </td>
                     <td>{{ worker.active_tasks or 0 }} active / {{ worker.total_tasks or 0 }} total</td>
                     <td>{{ worker.completed_tasks or 0 }}</td>
                     <td>
-                        <button
-                            type="button"
-                            class="btn btn-sm btn-dark"
-                            data-bs-toggle="modal"
-                            data-bs-target="#assignTaskModal"
-                            data-worker-id="{{ worker.id }}"
-                            data-worker-name="{{ worker.name }}"
-                            data-worker-village="{{ worker.village_name or 'Assigned Area' }}"
-                        >
-                            Assign Task
-                        </button>
+                        <div class="d-grid gap-2">
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-dark"
+                                data-bs-toggle="modal"
+                                data-bs-target="#assignTaskModal"
+                                data-worker-id="{{ worker.id }}"
+                                data-worker-name="{{ worker.name }}"
+                                data-worker-village="{{ worker.village_name or 'Assigned Area' }}"
+                            >
+                                Assign Task
+                            </button>
+                            <form method="POST" action="{{ url_for('auth_bp.taluka_verify_worker', worker_id=worker.id) }}" class="d-grid gap-2">
+                                <input type="hidden" name="next_page" value="{{ request.path }}">
+                                <input type="text" class="form-control form-control-sm" name="verification_notes" placeholder="Optional verification note">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="submit" class="btn btn-success btn-sm" name="decision" value="approved">Approve</button>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" name="decision" value="rejected">Reject</button>
+                                </div>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="7" class="empty-note">No workers found for this taluka.</td></tr>
+                <tr><td colspan="8" class="empty-note">No workers found for this taluka.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

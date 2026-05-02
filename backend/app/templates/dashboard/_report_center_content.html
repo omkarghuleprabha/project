@@ -1,0 +1,184 @@
+<div class="report-shell">
+    <section class="report-hero">
+        <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 align-items-xl-center">
+            <div>
+                <small class="text-uppercase fw-semibold">Advanced Report Center</small>
+                <h2 class="mt-2 mb-2">{{ report_dataset_label }}</h2>
+                <p class="mb-0">{{ report_dataset_description }}</p>
+            </div>
+            <div class="hero-badges">
+                <span class="hero-badge"><i class="fas fa-shield-halved"></i> Secure scope locked</span>
+                <span class="hero-badge"><i class="fas fa-location-dot"></i> {{ report_scope_label }}</span>
+                <span class="hero-badge"><i class="fas fa-calendar-days"></i> {{ report_date_filters.label }}</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="report-panel">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-3">
+            <div>
+                <h3 class="mb-1">Preview and Download</h3>
+                <p class="mb-0">Filter the exact area and period you need, preview the records instantly, then export to Excel or PDF.</p>
+            </div>
+            <div class="report-actions">
+                <a href="{{ report_export_excel_url }}" class="btn btn-dark"><i class="fas fa-file-excel me-2"></i>Download Excel</a>
+                <a href="{{ report_export_pdf_url }}" class="btn btn-outline-dark"><i class="fas fa-file-pdf me-2"></i>Download PDF</a>
+            </div>
+        </div>
+
+        <form method="GET" class="row g-3">
+            <div class="col-12">
+                <label class="form-label fw-semibold">Report Dataset</label>
+                <div class="dataset-grid">
+                    {% for item in report_dataset_options %}
+                    <div class="dataset-card">
+                        <input type="radio" id="dataset_{{ item.key }}" name="dataset" value="{{ item.key }}" data-report-dataset {% if item.selected %}checked{% endif %}>
+                        <label for="dataset_{{ item.key }}">
+                            <i class="fas {{ item.icon }}"></i>
+                            <strong>{{ item.label }}</strong>
+                            <span>{{ item.description }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if session.get('role') == 'state_admin' %}
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">District</label>
+                <select class="form-select" name="district_id">
+                    <option value="">All Districts</option>
+                    {% for district in report_filter_options.districts %}
+                    <option value="{{ district.id }}" {% if report_scope.district_id == district.id %}selected{% endif %}>{{ district.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            {% if session.get('role') in ['state_admin', 'district_admin'] %}
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Taluka</label>
+                <select class="form-select" name="taluka_id">
+                    <option value="">All Talukas</option>
+                    {% for taluka in report_filter_options.talukas %}
+                    <option value="{{ taluka.id }}" {% if report_scope.taluka_id == taluka.id %}selected{% endif %}>{{ taluka.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Village</label>
+                <select class="form-select" name="village_id">
+                    <option value="">All Villages</option>
+                    {% for village in report_filter_options.villages %}
+                    <option value="{{ village.id }}" {% if report_scope.village_id == village.id %}selected{% endif %}>{{ village.name }}</option>
+                    {% endfor %}
+                </select>
+                {% if not report_filter_options.villages and session.get('role') in ['state_admin', 'district_admin'] %}
+                <div class="form-text">Choose a taluka to narrow down village-level records.</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Quick Range</label>
+                <select class="form-select" name="range">
+                    <option value="all" {% if report_date_filters.range_key == 'all' %}selected{% endif %}>All Time</option>
+                    <option value="7d" {% if report_date_filters.range_key == '7d' %}selected{% endif %}>Last 7 Days</option>
+                    <option value="30d" {% if report_date_filters.range_key == '30d' %}selected{% endif %}>Last 30 Days</option>
+                    <option value="90d" {% if report_date_filters.range_key == '90d' %}selected{% endif %}>Last 90 Days</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">From Date</label>
+                <input type="date" class="form-control" name="date_from" value="{{ report_date_filters.date_from_value }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">To Date</label>
+                <input type="date" class="form-control" name="date_to" value="{{ report_date_filters.date_to_value }}">
+            </div>
+
+            <div class="col-12 d-flex flex-column flex-md-row gap-2">
+                <button type="submit" class="btn btn-dark"><i class="fas fa-filter me-2"></i>Apply Filters</button>
+                <a href="{{ request.path }}" class="btn btn-outline-secondary"><i class="fas fa-rotate-left me-2"></i>Reset</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="report-stats">
+        {% for item in report_payload.summary_cards %}
+        <article class="report-stat {{ item.tone }}">
+            <div><i class="fas {{ item.icon }}"></i></div>
+            <strong>{{ item.value }}</strong>
+            <div>{{ item.label }}</div>
+            {% if item.detail %}
+            <small>{{ item.detail }}</small>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </section>
+
+    <section class="report-note-card">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+            <div>
+                <h3 class="mb-2">Security Guardrails</h3>
+                <p class="mb-0">Role-based scope checks are enforced again during preview and during file download.</p>
+            </div>
+            <div class="security-list">
+                {% for note in report_security_notes %}
+                <span class="security-chip"><i class="fas fa-lock"></i>{{ note }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {% for section in report_payload.preview_sections %}
+    <section class="report-table-card">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-3">
+            <div>
+                <h3 class="mb-1">{{ section.title }}</h3>
+                {% if section.description %}
+                <p class="mb-0 table-note">{{ section.description }}</p>
+                {% endif %}
+            </div>
+            <span class="preview-total"><i class="fas fa-table"></i>{{ section.total_rows }} total rows</span>
+        </div>
+
+        {% if section.rows %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        {% for column in section.columns %}
+                        <th>{{ column.label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in section.rows %}
+                    <tr>
+                        {% for column in section.columns %}
+                        <td>{{ row[column.key] }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="report-empty">No records match the selected scope and time range.</div>
+        {% endif %}
+    </section>
+    {% endfor %}
+
+    {% if report_payload.notes %}
+    <section class="report-note-card">
+        <h3 class="mb-2">Report Notes</h3>
+        <div class="report-notes">
+            {% for note in report_payload.notes %}
+            <span class="security-chip"><i class="fas fa-circle-info"></i>{{ note }}</span>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>

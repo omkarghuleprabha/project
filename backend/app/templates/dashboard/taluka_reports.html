@@ -1,0 +1,16 @@
+{% extends "dashboard/taluka_base.html" %}
+
+{% block page_title %}Taluka Reports{% endblock %}
+{% block page_subtitle %}Preview and download secure village-wise and taluka-wide reports for {{ admin_profile.taluka_name }}.{% endblock %}
+
+{% block taluka_head %}
+{% include "dashboard/_report_center_styles.html" %}
+{% endblock %}
+
+{% block taluka_content %}
+{% include "dashboard/_report_center_content.html" %}
+{% endblock %}
+
+{% block taluka_scripts %}
+{% include "dashboard/_report_center_script.html" %}
+{% endblock %}

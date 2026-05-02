@@ -1,0 +1,304 @@
+{% extends "dashboard/state_base.html" %}
+
+{% block page_title %}State Overview{% endblock %}
+{% block page_subtitle %}Coordinate district leadership, monitor verification queues, and broadcast instructions across {{ state_profile.state_name }}.{% endblock %}
+
+{% block state_head %}
+<style>
+    .metric-card {
+        color: white;
+        border-radius: 22px;
+        padding: 22px;
+        min-height: 168px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(20, 33, 61, 0.12);
+    }
+    .metric-card::after {
+        content: "";
+        position: absolute;
+        inset: auto -22px -26px auto;
+        width: 110px;
+        height: 110px;
+        background: rgba(255, 255, 255, 0.13);
+        border-radius: 50%;
+    }
+    .metric-card h4 {
+        margin: 14px 0 8px;
+        font-size: 2rem;
+        font-weight: 800;
+    }
+    .metric-card p {
+        margin: 0;
+        opacity: 0.92;
+    }
+    .bg-navy { background: linear-gradient(135deg, #14213d, #23395b); }
+    .bg-sky { background: linear-gradient(135deg, #4ea8de, #48bfe3); }
+    .bg-mint { background: linear-gradient(135deg, #2a9d8f, #52b69a); }
+    .bg-rose { background: linear-gradient(135deg, #e76f51, #f4a261); }
+    .bg-amber { background: linear-gradient(135deg, #fca311, #ffba49); color: #3b2b00; }
+    .brief-list {
+        display: grid;
+        gap: 0.85rem;
+    }
+    .brief-item {
+        padding: 1rem;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(20, 33, 61, 0.03), rgba(20, 33, 61, 0.01));
+    }
+    .verification-form {
+        display: grid;
+        gap: 0.65rem;
+    }
+    .verification-docs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.4rem;
+    }
+    .verification-docs a {
+        text-decoration: none;
+    }
+    .announcement-card textarea {
+        min-height: 140px;
+    }
+</style>
+{% endblock %}
+
+{% block state_content %}
+<div id="overview" class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-navy">
+            <div><i class="fas fa-map"></i></div>
+            <h4>{{ state_stats.districts }}</h4>
+            <p>Districts in scope</p>
+            <small>{{ state_stats.talukas }} talukas linked</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-sky">
+            <div><i class="fas fa-house-flag"></i></div>
+            <h4>{{ state_stats.villages }}</h4>
+            <p>Villages covered</p>
+            <small>{{ state_stats.citizens }} citizens registered</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-mint">
+            <div><i class="fas fa-users-gear"></i></div>
+            <h4>{{ state_stats.workers }}</h4>
+            <p>Workers on network</p>
+            <small>{{ state_stats.worker_pending }} worker verifications pending</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-rose">
+            <div><i class="fas fa-user-check"></i></div>
+            <h4>{{ state_stats.district_pending }}</h4>
+            <p>District admin reviews pending</p>
+            <small>{{ state_stats.taluka_pending }} taluka admin reviews downstream</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-amber">
+            <div><i class="fas fa-clipboard-check"></i></div>
+            <h4>{{ state_stats.completion_rate }}%</h4>
+            <p>Complaint completion rate</p>
+            <small>{{ state_stats.complaints_open }} complaints still open</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4 col-xxl-2">
+        <div class="metric-card bg-navy">
+            <div><i class="fas fa-badge-check"></i></div>
+            <h4>{{ state_stats.district_verified }}</h4>
+            <p>District admins verified</p>
+            <small>{{ state_stats.complaints_completed }} complaints completed</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4" id="announcements">
+    <div class="col-lg-6">
+        <div class="content-card announcement-card">
+            <div class="section-head">
+                <div>
+                    <h3>Broadcast Announcement</h3>
+                    <p>Send a single instruction to district admins, taluka admins, and workers across the full state network.</p>
+                </div>
+            </div>
+            <form method="POST" action="{{ url_for('auth_bp.post_announcement') }}">
+                <input type="hidden" name="next_page" value="{{ request.path }}">
+                <div class="mb-3">
+                    <label class="form-label" for="stateAnnouncementTitle">Title</label>
+                    <input type="text" class="form-control" id="stateAnnouncementTitle" name="title" placeholder="e.g. Monsoon emergency sanitation drive" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="stateAnnouncementMessage">Instruction</label>
+                    <textarea class="form-control" id="stateAnnouncementMessage" name="message" placeholder="Write the instruction that should reach every district admin, taluka admin, and worker." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-dark">
+                    <i class="fas fa-paper-plane me-2"></i>Send Statewide Announcement
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="content-card">
+            <div class="section-head">
+                <div>
+                    <h3>Recent State Announcements</h3>
+                    <p>The most recent instructions already visible in the notification bell.</p>
+                </div>
+            </div>
+            <div class="brief-list">
+                {% for item in announcement_feed %}
+                <div class="brief-item">
+                    <strong>{{ item.title }}</strong>
+                    <div class="small text-muted mt-1">{{ item.message }}</div>
+                    <div class="small text-muted mt-2">
+                        {{ item.created_at_text }} by {{ item.author_name or item.author_role_label }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="brief-item text-muted">No announcements have been sent yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="verifications" class="content-card mb-4">
+    <div class="section-head">
+        <div>
+            <h3>District Admin Verification</h3>
+            <p>Review Aadhaar details and selfies before district admins receive dashboard access.</p>
+        </div>
+        <span class="mini-badge pending">{{ district_admins|length }} records</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>District Admin</th>
+                    <th>District</th>
+                    <th>Verification</th>
+                    <th>Documents</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for admin in district_admins %}
+                <tr>
+                    <td>
+                        <strong>{{ admin.name }}</strong><br>
+                        <small class="text-muted">{{ admin.email or 'Email not available' }}</small><br>
+                        <small class="text-muted">{{ admin.phone or 'Phone not available' }}</small>
+                    </td>
+                    <td>
+                        {{ admin.district_name }}<br>
+                        <small class="text-muted">{{ admin.talukas }} talukas, {{ admin.workers }} workers</small>
+                    </td>
+                    <td>
+                        <span class="mini-badge {{ admin.verification_status }}">{{ admin.verification_status_label }}</span><br>
+                        <small class="text-muted">Aadhaar: {{ admin.aadhaar_no or 'Not added' }}</small>
+                        {% if admin.verification_notes %}
+                        <br><small class="text-muted">{{ admin.verification_notes }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="verification-docs">
+                            {% if admin.has_aadhaar_photo %}
+                            <a href="{{ admin.aadhaar_photo_url }}" class="btn btn-outline-dark btn-sm" target="_blank">Aadhaar Photo</a>
+                            {% endif %}
+                            {% if admin.has_selfie_photo %}
+                            <a href="{{ admin.selfie_photo_url }}" class="btn btn-outline-dark btn-sm" target="_blank">Selfie</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('auth_bp.state_verify_district_admin', district_admin_id=admin.id) }}" class="verification-form">
+                            <input type="hidden" name="next_page" value="{{ request.path }}">
+                            <input type="text" class="form-control form-control-sm" name="verification_notes" placeholder="Optional note for this review">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="submit" class="btn btn-success btn-sm" name="decision" value="approved">Approve</button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm" name="decision" value="rejected">Reject</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="empty-note">No district admins found for this state.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="districts" class="row g-4">
+    <div class="col-xl-7">
+        <div class="content-card h-100">
+            <div class="section-head">
+                <div>
+                    <h3>District Performance Table</h3>
+                    <p>Use this view to compare coverage, workforce, and unresolved complaint pressure by district.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>District</th>
+                            <th>Talukas</th>
+                            <th>Villages</th>
+                            <th>Workers</th>
+                            <th>Open Complaints</th>
+                            <th>Completion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for district in district_rows %}
+                        <tr>
+                            <td>
+                                <strong>{{ district.name }}</strong><br>
+                                <small class="text-muted">{{ district.citizens }} citizens</small>
+                            </td>
+                            <td>{{ district.talukas }}</td>
+                            <td>{{ district.villages }}</td>
+                            <td>{{ district.workers }}</td>
+                            <td>{{ district.open_complaints }}</td>
+                            <td>{{ district.completion_rate }}%</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6" class="empty-note">No district summary is available right now.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-5">
+        <div class="content-card h-100">
+            <div class="section-head">
+                <div>
+                    <h3>Open Escalations Across State</h3>
+                    <p>Priority complaints still waiting for field action.</p>
+                </div>
+            </div>
+            <div class="brief-list">
+                {% for item in state_escalations %}
+                <div class="brief-item">
+                    <strong>#CMP-{{ item.id }} {{ item.title }}</strong>
+                    <div class="small text-muted mt-1">{{ item.district }}, {{ item.taluka }}, {{ item.village }}</div>
+                    <div class="small text-muted mt-2">
+                        {{ item.hours_waiting }} hrs waiting | {{ item.worker_name }} | {{ item.priority or 'Normal' }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="brief-item text-muted">No open escalations are waiting at the moment.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

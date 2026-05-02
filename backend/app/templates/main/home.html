@@ -543,10 +543,20 @@
             <div class="col-lg-6" data-aos="fade-right">
                 <div class="inquiry-form">
                     <h4 class="fw-bold mb-4"><i class="fas fa-envelope-open-text me-2 text-success"></i>Send Inquiry</h4>
-                    <form id="inquiryForm">
-                        <div class="mb-3"><input type="text" class="form-control form-control-nature" placeholder="Full Name" required></div>
-                        <div class="mb-3"><input type="tel" class="form-control form-control-nature" placeholder="Mobile Number" required></div>
-                        <div class="mb-3"><textarea class="form-control form-control-nature" rows="3" placeholder="Your Query / Suggestion" required></textarea></div>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    <form id="inquiryForm" method="POST" action="{{ url_for('main_bp.submit_inquiry') }}">
+                        <div class="mb-3"><input type="text" name="full_name" class="form-control form-control-nature" placeholder="Full Name" required></div>
+                        <div class="mb-3"><input type="tel" name="mobile_number" class="form-control form-control-nature" placeholder="Mobile Number" maxlength="20" required></div>
+                        <div class="mb-3"><textarea name="message" class="form-control form-control-nature" rows="3" placeholder="Your Query / Suggestion" required></textarea></div>
                         <button type="submit" class="btn-reg-nav w-100 py-2" style="border: none;">Submit Inquiry <i class="fas fa-paper-plane ms-2"></i></button>
                     </form>
                 </div>
@@ -596,6 +606,7 @@
     // Login/Register URLs - Replace with your actual Flask routes
     const LOGIN_URL = "{{ url_for('auth_bp.login') }}";
     const REGISTER_URL = "{{ url_for('auth_bp.register') }}";
+    const INITIAL_PAGE = "{{ initial_page|default('home') }}";
     
     // For local development fallback (remove in production)
     const USE_FALLBACK = true; // Set to false when using Flask backend
@@ -656,13 +667,6 @@
     });
     document.getElementById('navHomeLink')?.addEventListener('click', (e) => { e.preventDefault(); showPage('home'); });
     
-    // Inquiry form
-    document.getElementById('inquiryForm')?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        alert('✅ Thank you for your inquiry! Our team will contact you soon.');
-        e.target.reset();
-    });
-    
     // Navbar scroll effect
     window.addEventListener('scroll', () => {
         const navbar = document.getElementById('navbar');
@@ -670,7 +674,7 @@
         else navbar.classList.remove('scrolled');
     });
     
-    showPage('home');
+    showPage(INITIAL_PAGE);
 </script>
 </body>
 </html>

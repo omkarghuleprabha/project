@@ -1308,6 +1308,15 @@ function hashWorkerCoordinate(seed, center) {
     };
 }
 
+function explicitWorkerPosition(task) {
+    const latitude = Number(task.latitude);
+    const longitude = Number(task.longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return null;
+    }
+    return { lat: latitude, lng: longitude };
+}
+
 function workerMapIcon(type, isClosed = false) {
     return L.divIcon({
         className: 'worker-map-pin-shell',
@@ -1325,6 +1334,8 @@ function workerMapPopup(task) {
             <div><strong>${escapeHtml(task.source_label || 'Task')}</strong> • ${escapeHtml(task.status_label || task.status || 'Pending')}</div>
             <div>${escapeHtml(task.description || task.garbage_type || 'Assigned task')}</div>
             <div>${escapeHtml(task.citizen_name || 'Taluka Office')}</div>
+            ${task.coordinates_text ? `<div>${escapeHtml(task.coordinates_text)}</div>` : ''}
+            ${task.map_url ? `<div><a href="${escapeHtml(task.map_url)}" target="_blank" rel="noopener">Navigate</a></div>` : ''}
         </div>
     `;
 }
@@ -1345,6 +1356,8 @@ function renderWorkerTaskMapList(tasks) {
             <strong>${escapeHtml(task.ticket_id || task.id)} - ${escapeHtml(task.location_name || task.area_name || 'Assigned Area')}</strong>
             <div class="worker-map-meta">${escapeHtml(task.source_label || 'Task')} • ${escapeHtml(task.status_label || task.status || 'Pending')}</div>
             <div class="worker-map-meta">${escapeHtml(task.description || task.garbage_type || 'Assigned task')}</div>
+            ${task.coordinates_text ? `<div class="worker-map-meta">${escapeHtml(task.coordinates_text)}</div>` : ''}
+            ${task.map_url ? `<div class="worker-map-meta"><a href="${escapeHtml(task.map_url)}" target="_blank" rel="noopener">Navigate</a></div>` : ''}
         </div>
     `).join('');
 }
@@ -1407,7 +1420,8 @@ async function updateTaskMap(tasks) {
     const currentCenter = workerTaskMap.getCenter();
     const fallbackCenter = { lat: currentCenter.lat, lng: currentCenter.lng };
     workerResolvedTaskMarkers = await Promise.all((tasks || []).map(async (task, index) => {
-        const geocoded = await geocodeWorkerQuery(task.map_query);
+        const exactPosition = explicitWorkerPosition(task);
+        const geocoded = exactPosition ? null : await geocodeWorkerQuery(task.map_query);
         const markerType = task.source === 'complaint'
             ? 'complaint'
             : task.source === 'manual_task'
@@ -1418,7 +1432,7 @@ async function updateTaskMap(tasks) {
             ...task,
             markerType,
             normalizedStatus: normalizeWorkerMapStatus(task.status_class || task.status),
-            position: geocoded || hashWorkerCoordinate(task.ticket_id || task.id || index, fallbackCenter)
+            position: exactPosition || geocoded || hashWorkerCoordinate(task.ticket_id || task.id || index, fallbackCenter)
         };
     }));
 
@@ -1613,6 +1627,8 @@ function renderTasks(tasks) {
         const statusLabel = escapeHtml(task.status_label || (task.status || 'pending').replace('_', ' '));
         const statusClass = (task.status_class || (task.status || 'pending').replace('_', '-')).toLowerCase();
         const sourceLabel = escapeHtml(task.source_label || 'Assigned Task');
+        const originalPhotoUrl = escapeHtml(task.original_photo_url || '');
+        const resolutionPhotoUrl = escapeHtml(task.resolution_photo_url || '');
         const startUrlTemplate = task.source === 'complaint'
             ? workerStartComplaintUrlTemplate
             : workerStartTaskUrlTemplate;
@@ -1621,6 +1637,26 @@ function renderTasks(tasks) {
             : task.source === 'complaint'
                 ? workerCompleteComplaintUrlTemplate
                 : workerCompleteTaskUrlTemplate;
+        const photoHtml = task.source === 'complaint'
+            ? `
+                ${task.has_original_photo ? `
+                    <div style="margin-top: 10px;">
+                        <small style="color: var(--text-muted); display: block; margin-bottom: 6px;">Citizen Photo</small>
+                        <a href="${originalPhotoUrl}" target="_blank" rel="noopener">
+                            <img src="${originalPhotoUrl}" alt="Citizen complaint photo" style="width: 84px; height: 84px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12);">
+                        </a>
+                    </div>
+                ` : ''}
+                ${task.has_resolution_photo ? `
+                    <div style="margin-top: 10px;">
+                        <small style="color: var(--text-muted); display: block; margin-bottom: 6px;">Completion Photo</small>
+                        <a href="${resolutionPhotoUrl}" target="_blank" rel="noopener">
+                            <img src="${resolutionPhotoUrl}" alt="Complaint completion photo" style="width: 84px; height: 84px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12);">
+                        </a>
+                    </div>
+                ` : ''}
+            `
+            : '';
 
         let actionHtml = '<span class="text-muted small">No action</span>';
         if (task.can_start) {
@@ -1632,8 +1668,9 @@ function renderTasks(tasks) {
             `;
         } else if (task.can_complete) {
             actionHtml = `
-                <form method="POST" action="${completeUrlTemplate.replace('999999', task.id)}" style="display: inline;">
+                <form method="POST" action="${completeUrlTemplate.replace('999999', task.id)}" style="display: inline;" ${task.source === 'complaint' ? 'enctype="multipart/form-data"' : ''}>
                     <input type="hidden" name="next_page" value="${currentWorkerPage}">
+                    ${task.source === 'complaint' ? '<input type="file" name="completion_photo" accept="image/*" required style="display: block; width: 100%; margin-bottom: 8px;">' : ''}
                     <button class="btn btn-success btn-sm">${task.source === 'manual_task' ? 'Mark Done' : task.source === 'complaint' ? 'Resolve' : 'Complete'}</button>
                 </form>
             `;
@@ -1649,6 +1686,7 @@ function renderTasks(tasks) {
                     <span class="task-status ${statusClass}">${statusLabel}</span>
                 </div>
                 <small style="color: var(--text-muted);">${sourceLabel}</small>
+                ${photoHtml}
             </div>
             <div class="task-actions">
                 ${actionHtml}

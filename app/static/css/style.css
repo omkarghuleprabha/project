@@ -163,3 +163,171 @@ body{
     70% { box-shadow: 0 0 0 15px rgba(40, 167, 69, 0); }
     100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
 }
+
+/* ==================== NOTIFICATIONS STYLING ==================== */
+
+/* Notification Container */
+.flash-shell {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.flash-shell .alert {
+    pointer-events: auto;
+}
+
+/* Slide In Animation */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(450px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Slide Out Animation */
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(450px);
+    }
+}
+
+/* Custom Alert Styling */
+.alert {
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 16px 20px !important;
+    margin-bottom: 15px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+    animation: slideInRight 0.4s ease-out !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    font-weight: 500 !important;
+    backdrop-filter: blur(10px);
+    border-left: 4px solid !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Slide out on dismiss */
+.alert.alert-removing {
+    animation: slideOutRight 0.4s ease-in !important;
+}
+
+/* Success Alert */
+.alert-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    color: white !important;
+    border-left-color: #fff !important;
+}
+
+.alert-success::before {
+    content: "✓";
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Danger Alert */
+.alert-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%) !important;
+    color: white !important;
+    border-left-color: #fff !important;
+}
+
+.alert-danger::before {
+    content: "✕";
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Warning Alert */
+.alert-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff6c00 100%) !important;
+    color: white !important;
+    border-left-color: #fff !important;
+}
+
+.alert-warning::before {
+    content: "⚠";
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Info Alert */
+.alert-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%) !important;
+    color: white !important;
+    border-left-color: #fff !important;
+}
+
+.alert-info::before {
+    content: "ℹ";
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Message Alert (treat as info) */
+.alert-message {
+    background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%) !important;
+    color: white !important;
+    border-left-color: #fff !important;
+}
+
+.alert-message::before {
+    content: "ℹ";
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Close Button Styling */
+.alert .btn-close {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23fff' d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") !important;
+    opacity: 1 !important;
+    filter: brightness(0) invert(1) !important;
+    padding: 5px !important;
+    margin-left: auto !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.alert .btn-close:hover {
+    opacity: 0.8 !important;
+    transform: scale(1.2) !important;
+}
+
+.alert .btn-close:focus {
+    box-shadow: none !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 576px) {
+    .flash-shell {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: 100%;
+    }
+    
+    .alert {
+        padding: 14px 16px !important;
+        font-size: 14px !important;
+    }
+}

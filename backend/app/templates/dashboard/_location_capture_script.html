@@ -1,0 +1,328 @@
+<script>
+(function () {
+    const TARGET_ACCURACY_METERS = 100;
+    const MAX_ACCEPTABLE_ACCURACY_METERS = 500;
+    const CAPTURE_TIMEOUT_MS = 25000;
+
+    function isLocalhostHost(hostname) {
+        return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+    }
+
+    function hasSecureLocationContext() {
+        return window.isSecureContext || isLocalhostHost(window.location.hostname);
+    }
+
+    function buildBrowserMapUrl(latitude, longitude) {
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${latitude},${longitude}`)}`;
+    }
+
+    function accuracyFromPosition(position) {
+        const accuracyValue = Number(position && position.coords ? position.coords.accuracy : NaN);
+        return Number.isFinite(accuracyValue) && accuracyValue >= 0 ? accuracyValue : null;
+    }
+
+    function formatAccuracyLabel(accuracyValue) {
+        if (!Number.isFinite(accuracyValue) || accuracyValue < 0) {
+            return '';
+        }
+
+        if (accuracyValue >= 1000) {
+            return `${(accuracyValue / 1000).toFixed(1)} km`;
+        }
+
+        return `${Math.round(accuracyValue)} meters`;
+    }
+
+    function getOrCreateMapLink(container) {
+        let mapLinkNode = container.querySelector('[data-location-map-link]');
+        if (mapLinkNode) {
+            return mapLinkNode;
+        }
+
+        const previewNode = container.querySelector('[data-location-preview]');
+        if (!previewNode || !previewNode.parentNode) {
+            return null;
+        }
+
+        mapLinkNode = document.createElement('a');
+        mapLinkNode.href = '#';
+        mapLinkNode.target = '_blank';
+        mapLinkNode.rel = 'noopener';
+        mapLinkNode.className = 'small d-none d-inline-block mt-2';
+        mapLinkNode.dataset.locationMapLink = 'true';
+        mapLinkNode.textContent = 'Open captured point in Maps';
+
+        previewNode.insertAdjacentElement('afterend', mapLinkNode);
+        return mapLinkNode;
+    }
+
+    function updateCaptureState(container, state) {
+        const statusNode = container.querySelector('[data-location-status]');
+        const previewNode = container.querySelector('[data-location-preview]');
+        const latitudeNode = container.querySelector('[data-location-latitude]');
+        const longitudeNode = container.querySelector('[data-location-longitude]');
+        const accuracyNode = container.querySelector('[data-location-accuracy]');
+        const mapLinkNode = getOrCreateMapLink(container);
+
+        if (statusNode) {
+            statusNode.textContent = state.message || '';
+            statusNode.className = `small ${state.className || 'text-muted'}`;
+        }
+
+        if (previewNode) {
+            previewNode.value = state.preview || '';
+        }
+
+        if (latitudeNode) {
+            latitudeNode.value = state.latitude || '';
+        }
+
+        if (longitudeNode) {
+            longitudeNode.value = state.longitude || '';
+        }
+
+        if (accuracyNode) {
+            accuracyNode.value = state.accuracy || '';
+        }
+
+        if (mapLinkNode) {
+            if (state.mapUrl) {
+                mapLinkNode.href = state.mapUrl;
+                mapLinkNode.classList.remove('d-none');
+            } else {
+                mapLinkNode.href = '#';
+                mapLinkNode.classList.add('d-none');
+            }
+        }
+    }
+
+    function buildGeolocationMessage(error) {
+        if (!error) {
+            return 'Unable to capture live location right now.';
+        }
+
+        if (error.code === 'LOW_ACCURACY') {
+            return error.message || 'Location accuracy is too low. Move outdoors, enable GPS, and try again.';
+        }
+
+        if (error.code === error.PERMISSION_DENIED) {
+            return 'Location permission was denied. Please allow location access in your browser and try again.';
+        }
+
+        if (error.code === error.POSITION_UNAVAILABLE) {
+            return 'Your device could not determine a location. Move to an open area or enable GPS, then try again.';
+        }
+
+        if (error.code === error.TIMEOUT) {
+            return 'Location capture timed out. Please keep GPS on and try again.';
+        }
+
+        return error.message || 'Unable to capture live location right now.';
+    }
+
+    function captureBestPosition(container, options, timeoutMs) {
+        return new Promise(function (resolve, reject) {
+            let settled = false;
+            let bestPosition = null;
+            let watchId = null;
+            let timeoutId = null;
+
+            function cleanup() {
+                if (watchId !== null) {
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+                }
+                if (timeoutId !== null) {
+                    window.clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+            }
+
+            function finishWithError(error) {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                cleanup();
+                reject(error);
+            }
+
+            function finishWithPosition(position) {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                cleanup();
+                resolve(position);
+            }
+
+            watchId = navigator.geolocation.watchPosition(
+                function (position) {
+                    const accuracyValue = accuracyFromPosition(position);
+                    const bestAccuracy = accuracyFromPosition(bestPosition);
+
+                    if (!bestPosition || bestAccuracy === null || (accuracyValue !== null && accuracyValue < bestAccuracy)) {
+                        bestPosition = position;
+                    }
+
+                    if (accuracyValue !== null) {
+                        updateCaptureState(container, {
+                            message: `Getting GPS lock... best accuracy so far is about ${formatAccuracyLabel(accuracyValue)}.`,
+                            className: accuracyValue <= MAX_ACCEPTABLE_ACCURACY_METERS ? 'text-warning' : 'text-danger',
+                        });
+                    }
+
+                    if (accuracyValue !== null && accuracyValue <= TARGET_ACCURACY_METERS) {
+                        finishWithPosition(position);
+                    }
+                },
+                function (error) {
+                    if (bestPosition) {
+                        finishWithPosition(bestPosition);
+                        return;
+                    }
+                    finishWithError(error);
+                },
+                options
+            );
+
+            timeoutId = window.setTimeout(function () {
+                if (bestPosition) {
+                    finishWithPosition(bestPosition);
+                    return;
+                }
+
+                finishWithError({
+                    code: 3,
+                    message: 'Location capture timed out. Please keep GPS on and try again.',
+                });
+            }, timeoutMs);
+        });
+    }
+
+    async function getBestAvailablePosition(container) {
+        const position = await captureBestPosition(
+            container,
+            {
+                enableHighAccuracy: true,
+                timeout: CAPTURE_TIMEOUT_MS,
+                maximumAge: 0,
+            },
+            CAPTURE_TIMEOUT_MS
+        );
+
+        const accuracyValue = accuracyFromPosition(position);
+        if (accuracyValue !== null && accuracyValue > MAX_ACCEPTABLE_ACCURACY_METERS) {
+            throw {
+                code: 'LOW_ACCURACY',
+                message: `Location accuracy is too low at about ${formatAccuracyLabel(accuracyValue)}. Move outdoors, turn on phone GPS, and try again.`,
+            };
+        }
+
+        return position;
+    }
+
+    function wireLocationCapture(container) {
+        if (!container || container.dataset.locationBound === 'true') {
+            return;
+        }
+
+        const trigger = container.querySelector('[data-location-trigger]');
+        if (!trigger) {
+            return;
+        }
+
+        trigger.addEventListener('click', async function () {
+            if (!navigator.geolocation) {
+                updateCaptureState(container, {
+                    message: 'Live location is not supported in this browser.',
+                    className: 'text-danger',
+                });
+                return;
+            }
+
+            if (!hasSecureLocationContext()) {
+                updateCaptureState(container, {
+                    message: 'Live location on a deployed site needs HTTPS. Open the live site over HTTPS and try again.',
+                    className: 'text-danger',
+                    latitude: '',
+                    longitude: '',
+                    accuracy: '',
+                    preview: '',
+                    mapUrl: '',
+                });
+                return;
+            }
+
+            trigger.disabled = true;
+            const originalLabel = trigger.innerHTML;
+            trigger.innerHTML = 'Capturing...';
+            updateCaptureState(container, {
+                message: 'Capturing your current location...',
+                className: 'text-muted',
+                latitude: '',
+                longitude: '',
+                accuracy: '',
+                preview: '',
+                mapUrl: '',
+            });
+
+            try {
+                const position = await getBestAvailablePosition(container);
+                const latitudeValue = Number(position && position.coords ? position.coords.latitude : NaN);
+                const longitudeValue = Number(position && position.coords ? position.coords.longitude : NaN);
+                const accuracyValue = accuracyFromPosition(position);
+
+                if (!Number.isFinite(latitudeValue) || !Number.isFinite(longitudeValue)) {
+                    throw new Error('Captured location was incomplete. Please try again.');
+                }
+
+                const latitude = latitudeValue.toFixed(6);
+                const longitude = longitudeValue.toFixed(6);
+                const accuracy = accuracyValue !== null
+                    ? accuracyValue.toFixed(2)
+                    : '';
+
+                updateCaptureState(container, {
+                    message: accuracy
+                        ? `Live location captured. Accuracy about ${formatAccuracyLabel(Number(accuracy))}.`
+                        : 'Live location captured successfully.',
+                    className: 'text-success',
+                    preview: `${latitude}, ${longitude}`,
+                    latitude,
+                    longitude,
+                    accuracy,
+                    mapUrl: buildBrowserMapUrl(latitude, longitude),
+                });
+            } catch (error) {
+                updateCaptureState(container, {
+                    message: buildGeolocationMessage(error),
+                    className: 'text-danger',
+                    latitude: '',
+                    longitude: '',
+                    accuracy: '',
+                    preview: '',
+                    mapUrl: '',
+                });
+            } finally {
+                trigger.disabled = false;
+                trigger.innerHTML = originalLabel;
+            }
+        });
+
+        container.dataset.locationBound = 'true';
+    }
+
+    function initializeLocationCaptures(root) {
+        (root || document).querySelectorAll('[data-location-capture]').forEach(wireLocationCapture);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeLocationCaptures(document);
+    });
+
+    document.addEventListener('shown.bs.modal', function (event) {
+        initializeLocationCaptures(event.target);
+    });
+})();
+</script>

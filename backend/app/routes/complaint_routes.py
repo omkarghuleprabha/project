@@ -1,9 +1,12 @@
 from flask import Blueprint, request, redirect, url_for, flash, session, current_app
-from werkzeug.utils import secure_filename
 from app.utils.db import get_db
-from app.utils.complaints import ensure_complaint_workflow_columns, get_complaint_columns
-import os
-import uuid
+from app.utils.complaints import (
+    complaint_original_photo_column,
+    ensure_complaint_workflow_columns,
+    get_complaint_columns,
+    save_complaint_upload,
+)
+from app.utils.location import parse_submitted_location
 
 complaint_bp = Blueprint('complaint_bp', __name__, url_prefix='/complaint')
 
@@ -18,15 +21,6 @@ def _get_redirect_target():
         return referrer
 
     return url_for('user_bp.user_complaints')
-
-
-def _resolve_complaint_image_column(cursor):
-    for column_name in ('photo_path', 'garbage_img'):
-        cursor.execute(f"SHOW COLUMNS FROM complaints LIKE '{column_name}'")
-        if cursor.fetchone():
-            return column_name
-    return None
-
 
 @complaint_bp.route('/add', methods=['POST'])
 def add_complaint():
@@ -44,6 +38,11 @@ def add_complaint():
     taluka = (request.form.get('taluka') or '').strip()
     village = (request.form.get('village') or '').strip()
     priority = (request.form.get('priority') or 'Normal').strip() or 'Normal'
+    try:
+        location = parse_submitted_location(request.form)
+    except ValueError as exc:
+        flash(str(exc), "warning")
+        return redirect(redirect_target)
     file = request.files.get('garbage_img')
 
     # ✅ Validation
@@ -55,22 +54,7 @@ def add_complaint():
     unique_filename = None
     if file and file.filename:
         try:
-            filename = secure_filename(file.filename)
-
-            if '.' in filename:
-                ext = filename.rsplit('.', 1)[1].lower()
-            else:
-                ext = 'jpg'
-
-            unique_filename = f"{uuid.uuid4().hex}.{ext}"
-
-            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'complaints')
-
-            # create folder if not exists
-            os.makedirs(upload_folder, exist_ok=True)
-
-            file.save(os.path.join(upload_folder, unique_filename))
-
+            unique_filename = save_complaint_upload(file, current_app.root_path, prefix='citizen')
         except Exception as e:
             flash(f"File upload error: {str(e)}", "danger")
             return redirect(redirect_target)
@@ -88,13 +72,23 @@ def add_complaint():
         ensure_complaint_workflow_columns(cursor)
         complaint_columns = get_complaint_columns(cursor)
 
-        image_column = _resolve_complaint_image_column(cursor)
+        image_column = complaint_original_photo_column(complaint_columns)
         columns = ['user_id', 'title', 'description', 'district', 'taluka', 'village']
         values = [session['user_id'], title, description, district, taluka, village]
 
         if image_column:
             columns.append(image_column)
             values.append(unique_filename)
+
+        if 'latitude' in complaint_columns:
+            columns.append('latitude')
+            values.append(location.get('latitude'))
+        if 'longitude' in complaint_columns:
+            columns.append('longitude')
+            values.append(location.get('longitude'))
+        if 'location_accuracy_meters' in complaint_columns:
+            columns.append('location_accuracy_meters')
+            values.append(location.get('location_accuracy_meters'))
 
         columns.extend(['priority', 'status', 'created_at'])
         placeholders = ['%s'] * len(values) + ['%s', '%s', 'NOW()']

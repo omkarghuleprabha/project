@@ -3,6 +3,16 @@
 Smart Garbage Management System - Backend Runner
 """
 import os
+import sys
+
+
+PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
+BACKEND_DIR = os.path.join(PROJECT_DIR, 'backend')
+
+# Prefer the actively maintained backend app package when launching from the repo root.
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)
+
 from app import create_app
 
 def main():

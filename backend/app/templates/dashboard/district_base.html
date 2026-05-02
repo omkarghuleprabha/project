@@ -253,6 +253,8 @@
         .mini-badge.good { background: #dbeafe; color: #1d4ed8; }
         .mini-badge.excellent,
         .mini-badge.active { background: #dcfce7; color: #166534; }
+        .mini-badge.approved { background: #dcfce7; color: #166534; }
+        .mini-badge.rejected { background: #fee2e2; color: #b91c1c; }
         .mini-badge.on_leave { background: #fff7ed; color: #c2410c; }
         .mini-badge.inactive { background: #e5e7eb; color: #374151; }
         .table thead th {
@@ -346,6 +348,15 @@
             <a href="{{ url_for('auth_bp.district_taluka_admins_page') }}" class="nav-link {% if district_page == 'taluka_admins' %}active{% endif %}">
                 <i class="fas fa-user-tie"></i> Taluka Admins
             </a>
+            <a href="{{ url_for('auth_bp.district_equipment') }}" class="nav-link {% if district_page == 'equipment' %}active{% endif %}">
+                <i class="fas fa-boxes-stacked"></i> Equipment
+            </a>
+            <a href="{{ url_for('auth_bp.district_reports') }}" class="nav-link {% if district_page == 'reports' %}active{% endif %}">
+                <i class="fas fa-file-arrow-down"></i> Reports
+            </a>
+            <a href="{{ url_for('auth_bp.district_dashboard') }}#announcements" class="nav-link" data-district-nav="announcements">
+                <i class="fas fa-bullhorn"></i> Announcements
+            </a>
             <a href="{{ url_for('auth_bp.district_dashboard') }}#revenue" class="nav-link" data-district-nav="revenue">
                 <i class="fas fa-wallet"></i> Revenue
             </a>
@@ -366,6 +377,7 @@
                     <i class="fas fa-location-crosshairs"></i>
                     {{ district_profile.district_name if district_profile else 'District' }} Scope
                 </div>
+                {% include "dashboard/_announcement_bell.html" %}
                 {% include "dashboard/_session_timer.html" %}
             </div>
         </div>
@@ -387,6 +399,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script>
     (function () {
         const navLinks = Array.from(document.querySelectorAll('[data-district-nav]'));

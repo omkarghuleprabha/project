@@ -30,12 +30,36 @@
                         <td>#{{ task.ticket_id }}</td>
                         <td>{{ task.source_label }}</td>
                         <td>{{ task.citizen_name }}</td>
-                        <td>{{ task.area_name }}</td>
+                        <td>
+                            {{ task.area_name }}
+                            {% if task.has_coordinates %}
+                            <br><small class="text-muted">{{ task.coordinates_text }}</small>
+                            <br><a href="{{ task.map_url }}" target="_blank" rel="noopener" class="small">Navigate</a>
+                            {% elif task.map_url %}
+                            <br><a href="{{ task.map_url }}" target="_blank" rel="noopener" class="small">Open area in Maps</a>
+                            {% endif %}
+                        </td>
                         <td>
                             <strong>{{ task.garbage_type }}</strong><br>
                             <small class="text-muted">Priority: {{ task.priority_label }}</small>
                             {% if task.amount is not none %}
                             <br><small class="text-muted">Amount: ₹{{ task.amount or 0 }}</small>
+                            {% endif %}
+                            {% if task.source == 'complaint' and task.has_original_photo %}
+                            <div class="mt-2">
+                                <small class="text-muted d-block mb-1">Citizen Photo</small>
+                                <a href="{{ task.original_photo_url }}" target="_blank" rel="noopener">
+                                    <img src="{{ task.original_photo_url }}" alt="Citizen complaint photo" class="img-thumbnail" style="max-width: 90px; max-height: 90px;">
+                                </a>
+                            </div>
+                            {% endif %}
+                            {% if task.source == 'complaint' and task.has_resolution_photo %}
+                            <div class="mt-2">
+                                <small class="text-muted d-block mb-1">Completion Photo</small>
+                                <a href="{{ task.resolution_photo_url }}" target="_blank" rel="noopener">
+                                    <img src="{{ task.resolution_photo_url }}" alt="Complaint completion photo" class="img-thumbnail" style="max-width: 90px; max-height: 90px;">
+                                </a>
+                            </div>
                             {% endif %}
                         </td>
                         <td>
@@ -54,8 +78,12 @@
                                 method="POST"
                                 action="{% if task.source == 'manual_task' %}{{ url_for('auth_bp.worker_complete_assigned_task', task_id=task.id) }}{% elif task.source == 'complaint' %}{{ url_for('auth_bp.worker_complete_complaint', complaint_id=task.id) }}{% else %}{{ url_for('auth_bp.worker_complete_task', task_id=task.id) }}{% endif %}"
                                 class="d-inline"
+                                {% if task.source == 'complaint' %}enctype="multipart/form-data"{% endif %}
                             >
                                 <input type="hidden" name="next_page" value="{{ request.path }}">
+                                {% if task.source == 'complaint' %}
+                                <input type="file" name="completion_photo" class="form-control form-control-sm mb-2" accept="image/*" required>
+                                {% endif %}
                                 <button class="btn btn-sm btn-success">{% if task.source == 'manual_task' %}Mark Done{% elif task.source == 'complaint' %}Resolve{% else %}Complete{% endif %}</button>
                             </form>
                             {% else %}

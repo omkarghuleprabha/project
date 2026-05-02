@@ -1,0 +1,1093 @@
+<style>
+    .equipment-shell {
+        display: grid;
+        gap: 1.5rem;
+    }
+    .equipment-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        padding: 1.75rem;
+        color: #fff;
+        background: linear-gradient(135deg, #14213d, #23395b 58%, #2a9d8f);
+        box-shadow: 0 22px 50px rgba(20, 33, 61, 0.16);
+    }
+    .equipment-hero.hero-worker {
+        background: linear-gradient(135deg, #14213d, #205375 58%, #4ea8de);
+    }
+    .equipment-hero.hero-taluka {
+        background: linear-gradient(135deg, #14213d, #7c4f1d 56%, #fca311);
+    }
+    .equipment-hero.hero-district {
+        background: linear-gradient(135deg, #14213d, #2d5d7b 56%, #4ea8de);
+    }
+    .equipment-hero.hero-state {
+        background: linear-gradient(135deg, #14213d, #1f6f64 56%, #2a9d8f);
+    }
+    .equipment-hero::after {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        right: -70px;
+        top: -90px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+    }
+    .equipment-hero::before {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: 90px;
+        bottom: -100px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+    }
+    .equipment-hero > * {
+        position: relative;
+        z-index: 1;
+    }
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.45rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .hero-copy h2 {
+        margin: 1rem 0 0.5rem;
+        font-size: clamp(1.8rem, 3vw, 2.65rem);
+        font-weight: 800;
+    }
+    .hero-copy p {
+        margin: 0;
+        max-width: 720px;
+        color: rgba(255, 255, 255, 0.84);
+        line-height: 1.7;
+    }
+    .hero-metrics {
+        margin-top: 1.35rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+    }
+    .hero-metric {
+        padding: 1rem 1.05rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
+    }
+    .hero-metric span {
+        display: block;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(255, 255, 255, 0.72);
+        margin-bottom: 0.45rem;
+    }
+    .hero-metric strong {
+        font-size: 1.8rem;
+        font-weight: 800;
+    }
+    .equipment-card {
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.07);
+        padding: 1.35rem;
+    }
+    .inventory-groups {
+        display: grid;
+        gap: 1rem;
+    }
+    .inventory-group {
+        border-radius: 22px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+    .inventory-group-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        padding: 1rem 1.1rem;
+        background: linear-gradient(180deg, rgba(20, 33, 61, 0.05), rgba(20, 33, 61, 0.02));
+    }
+    .inventory-group-head h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+    .inventory-group-head p {
+        margin: 0.2rem 0 0;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    .mini-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        background: rgba(20, 33, 61, 0.08);
+        color: #14213d;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+    .inventory-list {
+        display: grid;
+        gap: 0;
+    }
+    .inventory-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        padding: 1rem 1.1rem;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+    }
+    .inventory-item:first-child {
+        border-top: 0;
+    }
+    .inventory-item h5 {
+        margin: 0 0 0.3rem;
+        font-size: 0.98rem;
+        font-weight: 700;
+    }
+    .inventory-item p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 0.88rem;
+    }
+    .stock-stack {
+        text-align: right;
+        min-width: 128px;
+    }
+    .stock-count {
+        display: block;
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #14213d;
+    }
+    .stock-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+    .stock-status.healthy { background: rgba(42, 157, 143, 0.14); color: #18675d; }
+    .stock-status.watch { background: rgba(252, 163, 17, 0.16); color: #8d5a00; }
+    .stock-status.low,
+    .stock-status.critical { background: rgba(231, 111, 81, 0.16); color: #a23d25; }
+    .updated-at {
+        display: block;
+        margin-top: 0.45rem;
+        color: #6b7280;
+        font-size: 0.78rem;
+    }
+    .form-stack {
+        display: grid;
+        gap: 1rem;
+    }
+    .action-panel {
+        border-radius: 22px;
+        padding: 1.1rem;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(247, 250, 252, 0.92));
+    }
+    .action-panel h4 {
+        margin: 0 0 0.35rem;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+    .action-panel p {
+        margin: 0 0 1rem;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    .request-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+    .request-card {
+        padding: 1rem;
+        border-radius: 20px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: #fff;
+    }
+    .request-card strong {
+        font-size: 1rem;
+    }
+    .request-card small {
+        color: #6b7280;
+    }
+    .request-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin: 0.85rem 0;
+    }
+    .request-reason {
+        margin: 0;
+        color: #374151;
+        line-height: 1.55;
+    }
+    .request-actions {
+        margin-top: 1rem;
+        display: grid;
+        gap: 0.75rem;
+    }
+    .compact-form {
+        display: grid;
+        gap: 0.65rem;
+    }
+    .history-table thead th {
+        white-space: nowrap;
+    }
+    .empty-state {
+        padding: 1.4rem;
+        text-align: center;
+        color: #6b7280;
+        border: 1px dashed rgba(15, 23, 42, 0.14);
+        border-radius: 18px;
+        background: rgba(248, 250, 252, 0.9);
+    }
+    @media (max-width: 991px) {
+        .inventory-item {
+            grid-template-columns: 1fr;
+        }
+        .stock-stack {
+            text-align: left;
+        }
+    }
+</style>
+
+<div class="equipment-shell">
+    <section class="equipment-hero hero-{{ equipment_role }}">
+        <div class="eyebrow">
+            <i class="fas fa-shield-heart"></i>
+            Equipment Operations
+        </div>
+        <div class="hero-copy">
+            <h2>
+                {% if equipment_role == 'worker' %}
+                    Request safety gear and track what has been issued to you
+                {% elif equipment_role == 'taluka' %}
+                    Manage worker equipment requests and taluka reserve stock
+                {% elif equipment_role == 'district' %}
+                    Coordinate bulk equipment flow across taluka offices
+                {% else %}
+                    Allocate statewide equipment reserves to district teams
+                {% endif %}
+            </h2>
+            <p>
+                {% if equipment_role == 'worker' %}
+                    Use this page to request PPE, tools, transport support, and hygiene supplies from your taluka office while keeping your assigned stock history in one place.
+                {% elif equipment_role == 'taluka' %}
+                    Review worker requests, assign available equipment, raise bulk stock requests to the district office, and keep your taluka inventory clean and traceable.
+                {% elif equipment_role == 'district' %}
+                    Fulfill taluka stock requests, push equipment reserves downstream, raise escalations to the state office, and review every district-level transaction.
+                {% else %}
+                    Maintain state reserve stock, approve district equipment demands, assign inventory to district admins, and keep a statewide audit trail of every movement.
+                {% endif %}
+            </p>
+        </div>
+        <div class="hero-metrics">
+            <div class="hero-metric">
+                <span>Total Units</span>
+                <strong>{{ inventory_totals.total_quantity }}</strong>
+            </div>
+            <div class="hero-metric">
+                <span>Items Tracked</span>
+                <strong>{{ inventory_totals.item_count }}</strong>
+            </div>
+            <div class="hero-metric">
+                <span>Low Stock</span>
+                <strong>{{ inventory_totals.low_stock_count }}</strong>
+            </div>
+            <div class="hero-metric">
+                <span>
+                    {% if equipment_role == 'worker' %}
+                        Pending Requests
+                    {% else %}
+                        Pending Queue
+                    {% endif %}
+                </span>
+                <strong>
+                    {% if equipment_role == 'worker' %}
+                        {{ pending_request_count }}
+                    {% else %}
+                        {{ incoming_pending_requests|length }}
+                    {% endif %}
+                </strong>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="equipment-card">
+                <div class="section-head">
+                    <div>
+                        <h3>Live Stock Overview</h3>
+                        <p>All PPE, tools, transport equipment, and hygiene supplies currently tracked in this scope.</p>
+                    </div>
+                    <span class="mini-pill"><i class="fas fa-box-open"></i>{{ inventory_rows|length }} catalog items</span>
+                </div>
+                <div class="inventory-groups">
+                    {% for category in equipment_catalog %}
+                        {% set category_rows = inventory_rows|selectattr('category_name', 'equalto', category['category_name'])|list %}
+                        <div class="inventory-group">
+                            <div class="inventory-group-head">
+                                <div>
+                                    <h4>{{ category['category_name'] }}</h4>
+                                    <p>{{ category_rows|length }} tracked items in this category.</p>
+                                </div>
+                                <span class="mini-pill">
+                                    <i class="fas fa-layer-group"></i>
+                                    {{ category_rows|sum(attribute='quantity') }}
+                                </span>
+                            </div>
+                            <div class="inventory-list">
+                                {% for row in category_rows %}
+                                <div class="inventory-item">
+                                    <div>
+                                        <h5>{{ row.item_name }}</h5>
+                                        <p>
+                                            {% for item in category['items'] if item['item_key'] == row.item_key %}
+                                                {{ item['description'] }}
+                                            {% endfor %}
+                                        </p>
+                                    </div>
+                                    <div class="stock-stack">
+                                        <span class="stock-count">{{ row.quantity }}</span>
+                                        <span class="stock-status {{ row.stock_tone }}">{{ row.stock_label }}</span>
+                                        <span class="updated-at">Updated {{ row.updated_at_text }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="equipment-card">
+                <div class="section-head">
+                    <div>
+                        <h3>Action Center</h3>
+                        <p>
+                            {% if equipment_role == 'worker' %}
+                                Send a fresh request to your taluka admin.
+                            {% elif equipment_role == 'taluka' %}
+                                Issue stock, request bulk inventory, or update taluka reserve levels.
+                            {% elif equipment_role == 'district' %}
+                                Assign stock to talukas, escalate bulk needs, or update district reserve levels.
+                            {% else %}
+                                Assign inventory to districts and record new stock entering the state reserve.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="form-stack">
+                    {% if equipment_role == 'worker' %}
+                    <form method="POST" action="{{ url_for('auth_bp.worker_equipment_request') }}" class="action-panel">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <h4>Request Equipment</h4>
+                        <p>Choose the equipment you need and explain why it is required for field work.</p>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment Item</label>
+                            <select class="form-select" name="item_key" required>
+                                <option value="">Select equipment</option>
+                                {% for category in equipment_catalog %}
+                                    <optgroup label="{{ category['category_name'] }}">
+                                        {% for item in category['items'] %}
+                                        <option value="{{ item['item_key'] }}">{{ item['item_name'] }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" name="quantity" min="1" value="1" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" name="priority">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Reason</label>
+                            <textarea class="form-control" name="reason" rows="3" placeholder="Example: Current gloves are damaged and a new set is needed for door-to-door collection." required></textarea>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Additional Note</label>
+                            <input type="text" class="form-control" name="notes" placeholder="Shift, route, or urgency context">
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 mt-3">
+                            <i class="fas fa-paper-plane me-2"></i>Send Request
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if equipment_role == 'taluka' %}
+                    <form method="POST" action="{{ url_for('auth_bp.taluka_issue_equipment') }}" class="action-panel">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <h4>Assign Equipment To Worker</h4>
+                        <p>Issue stock directly from taluka reserve to a field worker.</p>
+                        <div class="mb-3">
+                            <label class="form-label">Worker</label>
+                            <select class="form-select" name="worker_id" required>
+                                <option value="">Select worker</option>
+                                {% for worker in worker_options %}
+                                <option value="{{ worker.id }}">{{ worker.name }} - {{ worker.village_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment Item</label>
+                            <select class="form-select" name="item_key" required>
+                                <option value="">Select equipment</option>
+                                {% for category in equipment_catalog %}
+                                    <optgroup label="{{ category['category_name'] }}">
+                                        {% for item in category['items'] %}
+                                        <option value="{{ item['item_key'] }}">{{ item['item_name'] }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-5">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" name="quantity" min="1" value="1" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">Note</label>
+                                <input type="text" class="form-control" name="notes" placeholder="Delivery details">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 mt-3">
+                            <i class="fas fa-boxes-packing me-2"></i>Assign Equipment
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('auth_bp.taluka_request_equipment_stock') }}" class="action-panel">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <h4>Request Bulk Stock From District</h4>
+                        <p>Escalate shortfalls to {{ upstream_scope_name }} when taluka reserve is running low.</p>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment Item</label>
+                            <select class="form-select" name="item_key" required>
+                                <option value="">Select equipment</option>
+                                {% for category in equipment_catalog %}
+                                    <optgroup label="{{ category['category_name'] }}">
+                                        {% for item in category['items'] %}
+                                        <option value="{{ item['item_key'] }}">{{ item['item_name'] }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-5">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" name="quantity" min="1" value="5" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" name="priority">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Reason</label>
+                            <textarea class="form-control" name="reason" rows="3" required></textarea>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Additional Note</label>
+                            <input type="text" class="form-control" name="notes" placeholder="Delivery window or usage context">
+                        </div>
+                        <button type="submit" class="btn btn-outline-dark w-100 mt-3">
+                            <i class="fas fa-arrow-up-right-dots me-2"></i>Send Bulk Request
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('auth_bp.taluka_restock_equipment') }}" class="action-panel">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <h4>Update Taluka Stock</h4>
+                        <p>Record fresh equipment entering the taluka reserve.</p>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment Item</label>
+                            <select class="form-select" name="item_key" required>
+                                <option value="">Select equipment</option>
+                                {% for category in equipment_catalog %}
+                                    <optgroup label="{{ category['category_name'] }}">
+                                        {% for item in category['items'] %}
+                                        <option value="{{ item['item_key'] }}">{{ item['item_name'] }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-5">
+                                <label class="form-label">Add Units</label>
+                                <input type="number" class="form-control" name="quantity" min="1" value="10" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">Note</label>
+                                <input type="text" class="form-control" name="notes" placeholder="Supplier or batch note">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-outline-success w-100 mt-3">
+                            <i class="fas fa-plus me-2"></i>Update Reserve
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if equipment_role == 'district' %}
+                    <form method="POST" action="{{ url_for('auth_bp.district_issue_equipment') }}" class="action-panel">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <h4>Assign Equipment To Taluka</h4>
+                        <p>Push district stock to an operational taluka office.</p>
+                        <div class="mb-3">
+                            <label class="form-label">Taluka Admin</label>
+                            <select class="form-select" name="taluka_admin_id" required>
+                                <option value="">Select taluka admin</option>
+                                {% for admin in taluka_admin_options %}
+                                <option value="{{ admin.id }}">{{ admin.name }} - {{ admin.taluka_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment Item</label>
+                            <select class="form-select" name="item_key" required>
+                                <option value="">Select equipment</option>
+                                {% for category in equipment_catalog %}
+                                    <optgroup label="{{ category['category_name'] }}">
+                                        {% for item in category['items'] %}
+                                        <option value="{{ item['item_key'] }}">{{ item['item_name'] }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-5">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" name="quantity" min="1" value="10" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">Note</label>
+                                <input type="text" class="form-control" name="notes" placeholder="Transport or dispatch note">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 mt-3">
+                            <i class="fas fa-truck-arrow-right me-2"></i>Assign To Taluka
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('auth_bp.district_request_equipment_stock') }}" class="action-panel">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <h4>Request Bulk Stock From State</h4>
+                        <p>Escalate district shortages to {{ upstream_scope_name }}.</p>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment Item</label>
+                            <select class="form-select" name="item_key" required>
+                                <option value="">Select equipment</option>
+                                {% for category in equipment_catalog %}
+                                    <optgroup label="{{ category['category_name'] }}">
+                                        {% for item in category['items'] %}
+                                        <option value="{{ item['item_key'] }}">{{ item['item_name'] }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-5">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" name="quantity" min="1" value="20" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" name="priority">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Reason</label>
+                            <textarea class="form-control" name="reason" rows="3" required></textarea>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Additional Note</label>
+                            <input type="text" class="form-control" name="notes" placeholder="Coverage area or urgency note">
+                        </div>
+                        <button type="submit" class="btn btn-outline-dark w-100 mt-3">
+                            <i class="fas fa-arrow-up-right-dots me-2"></i>Send State Request
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('auth_bp.district_restock_equipment') }}" class="action-panel">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <h4>Update District Stock</h4>
+                        <p>Record fresh equipment entering district reserve.</p>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment Item</label>
+                            <select class="form-select" name="item_key" required>
+                                <option value="">Select equipment</option>
+                                {% for category in equipment_catalog %}
+                                    <optgroup label="{{ category['category_name'] }}">
+                                        {% for item in category['items'] %}
+                                        <option value="{{ item['item_key'] }}">{{ item['item_name'] }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-5">
+                                <label class="form-label">Add Units</label>
+                                <input type="number" class="form-control" name="quantity" min="1" value="25" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">Note</label>
+                                <input type="text" class="form-control" name="notes" placeholder="Supplier or transfer note">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-outline-success w-100 mt-3">
+                            <i class="fas fa-plus me-2"></i>Update Reserve
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if equipment_role == 'state' %}
+                    <form method="POST" action="{{ url_for('auth_bp.state_issue_equipment') }}" class="action-panel">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <h4>Assign Equipment To District</h4>
+                        <p>Push state reserve stock to a district admin and district warehouse.</p>
+                        <div class="mb-3">
+                            <label class="form-label">District Admin</label>
+                            <select class="form-select" name="district_admin_id" required>
+                                <option value="">Select district admin</option>
+                                {% for admin in district_admin_options %}
+                                <option value="{{ admin.id }}">{{ admin.name }} - {{ admin.district_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment Item</label>
+                            <select class="form-select" name="item_key" required>
+                                <option value="">Select equipment</option>
+                                {% for category in equipment_catalog %}
+                                    <optgroup label="{{ category['category_name'] }}">
+                                        {% for item in category['items'] %}
+                                        <option value="{{ item['item_key'] }}">{{ item['item_name'] }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-5">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" name="quantity" min="1" value="25" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">Note</label>
+                                <input type="text" class="form-control" name="notes" placeholder="Dispatch note">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 mt-3">
+                            <i class="fas fa-truck-ramp-box me-2"></i>Assign To District
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('auth_bp.state_restock_equipment') }}" class="action-panel">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <h4>Update State Stock</h4>
+                        <p>Record new reserve stock arriving at state level.</p>
+                        <div class="mb-3">
+                            <label class="form-label">Equipment Item</label>
+                            <select class="form-select" name="item_key" required>
+                                <option value="">Select equipment</option>
+                                {% for category in equipment_catalog %}
+                                    <optgroup label="{{ category['category_name'] }}">
+                                        {% for item in category['items'] %}
+                                        <option value="{{ item['item_key'] }}">{{ item['item_name'] }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-5">
+                                <label class="form-label">Add Units</label>
+                                <input type="number" class="form-control" name="quantity" min="1" value="50" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label">Note</label>
+                                <input type="text" class="form-control" name="notes" placeholder="Supplier or warehouse note">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-outline-success w-100 mt-3">
+                            <i class="fas fa-plus me-2"></i>Update State Reserve
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if equipment_role == 'worker' %}
+    <div class="equipment-card">
+        <div class="section-head">
+            <div>
+                <h3>My Equipment Requests</h3>
+                <p>Track every request you have sent to the taluka office.</p>
+            </div>
+            <span class="mini-pill"><i class="fas fa-clipboard-list"></i>{{ request_history|length }} requests</span>
+        </div>
+        <div class="table-responsive history-table">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Priority</th>
+                        <th>Target</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in request_history %}
+                    <tr>
+                        <td>
+                            <strong>{{ row.item_name }}</strong><br>
+                            <small class="text-muted">{{ row.category_name }}</small>
+                        </td>
+                        <td>{{ row.quantity_requested }}</td>
+                        <td>{{ row.priority_label }}</td>
+                        <td>{{ row.target_scope_name }}</td>
+                        <td><span class="mini-pill">{{ row.status_label }}</span></td>
+                        <td>
+                            {{ row.reason }}{% if row.notes %}<br><small class="text-muted">{{ row.notes }}</small>{% endif %}
+                        </td>
+                        <td>{{ row.created_at_text }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="empty-note">No equipment requests have been sent yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="equipment-card">
+        <div class="section-head">
+            <div>
+                <h3>Pending Request Queue</h3>
+                <p>Approve and fulfill requests directly from the current stock position.</p>
+            </div>
+            <span class="mini-pill"><i class="fas fa-hourglass-half"></i>{{ incoming_pending_requests|length }} pending</span>
+        </div>
+        {% if incoming_pending_requests %}
+        <div class="request-grid">
+            {% for row in incoming_pending_requests %}
+            <div class="request-card">
+                <strong>{{ row.item_name }}</strong><br>
+                <small>{{ row.category_name }}</small>
+                <div class="request-meta">
+                    <span class="mini-pill"><i class="fas fa-user"></i>{{ row.requester_name }}</span>
+                    {% if row.requester_scope_name %}
+                    <span class="mini-pill"><i class="fas fa-location-dot"></i>{{ row.requester_scope_name }}</span>
+                    {% endif %}
+                    <span class="mini-pill"><i class="fas fa-cubes"></i>{{ row.quantity_requested }} units</span>
+                    <span class="mini-pill"><i class="fas fa-gauge-high"></i>{{ row.priority_label }}</span>
+                </div>
+                <p class="request-reason">{{ row.reason }}</p>
+                {% if row.notes %}
+                <div class="small text-muted mt-2">{{ row.notes }}</div>
+                {% endif %}
+                <div class="small text-muted mt-2">Requested {{ row.created_at_text }}</div>
+                <div class="request-actions">
+                    {% if equipment_role == 'taluka' %}
+                    <form method="POST" action="{{ url_for('auth_bp.taluka_issue_equipment') }}" class="compact-form">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <input type="hidden" name="request_id" value="{{ row.id }}">
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <input type="number" class="form-control form-control-sm" name="quantity" min="1" value="{{ row.quantity_pending or row.quantity_requested }}">
+                            </div>
+                            <div class="col-8">
+                                <input type="text" class="form-control form-control-sm" name="notes" placeholder="Assignment note">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark btn-sm">Fulfill Request</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('auth_bp.taluka_reject_equipment_request', request_id=row.id) }}" class="compact-form">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <input type="text" class="form-control form-control-sm" name="notes" placeholder="Reason for rejection">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Reject</button>
+                    </form>
+                    {% elif equipment_role == 'district' %}
+                    <form method="POST" action="{{ url_for('auth_bp.district_issue_equipment') }}" class="compact-form">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <input type="hidden" name="request_id" value="{{ row.id }}">
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <input type="number" class="form-control form-control-sm" name="quantity" min="1" value="{{ row.quantity_pending or row.quantity_requested }}">
+                            </div>
+                            <div class="col-8">
+                                <input type="text" class="form-control form-control-sm" name="notes" placeholder="Dispatch note">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark btn-sm">Fulfill Request</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('auth_bp.district_reject_equipment_request', request_id=row.id) }}" class="compact-form">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <input type="text" class="form-control form-control-sm" name="notes" placeholder="Reason for rejection">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Reject</button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{{ url_for('auth_bp.state_issue_equipment') }}" class="compact-form">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <input type="hidden" name="request_id" value="{{ row.id }}">
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <input type="number" class="form-control form-control-sm" name="quantity" min="1" value="{{ row.quantity_pending or row.quantity_requested }}">
+                            </div>
+                            <div class="col-8">
+                                <input type="text" class="form-control form-control-sm" name="notes" placeholder="Dispatch note">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark btn-sm">Fulfill Request</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('auth_bp.state_reject_equipment_request', request_id=row.id) }}" class="compact-form">
+                        <input type="hidden" name="next_page" value="{{ request.path }}">
+                        <input type="text" class="form-control form-control-sm" name="notes" placeholder="Reason for rejection">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Reject</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">No pending equipment requests are waiting in this queue right now.</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if equipment_role != 'state' %}
+    <div class="equipment-card">
+        <div class="section-head">
+            <div>
+                <h3>
+                    {% if equipment_role == 'worker' %}
+                        Issued Stock History
+                    {% else %}
+                        Upstream Requests
+                    {% endif %}
+                </h3>
+                <p>
+                    {% if equipment_role == 'worker' %}
+                        Every stock movement that reached your allocation record.
+                    {% else %}
+                        Bulk stock requests sent upward for replenishment.
+                    {% endif %}
+                </p>
+            </div>
+            <span class="mini-pill">
+                <i class="fas fa-clock-rotate-left"></i>
+                {% if equipment_role == 'worker' %}
+                    {{ transaction_rows|length }} entries
+                {% else %}
+                    {{ outgoing_requests|length }} requests
+                {% endif %}
+            </span>
+        </div>
+        {% if equipment_role != 'worker' %}
+        <div class="table-responsive history-table">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Target</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in outgoing_requests %}
+                    <tr>
+                        <td>
+                            <strong>{{ row.item_name }}</strong><br>
+                            <small class="text-muted">{{ row.category_name }}</small>
+                        </td>
+                        <td>{{ row.quantity_requested }}</td>
+                        <td>{{ row.target_scope_name }}</td>
+                        <td>{{ row.priority_label }}</td>
+                        <td><span class="mini-pill">{{ row.status_label }}</span></td>
+                        <td>{{ row.reason }}{% if row.notes %}<br><small class="text-muted">{{ row.notes }}</small>{% endif %}</td>
+                        <td>{{ row.created_at_text }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="empty-note">No upstream stock requests found yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="table-responsive history-table">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Movement</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Quantity</th>
+                        <th>Item</th>
+                        <th>When</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in transaction_rows %}
+                    <tr>
+                        <td>{{ row.transaction_label }}</td>
+                        <td>{{ row.from_scope_name }}</td>
+                        <td>{{ row.to_scope_name }}</td>
+                        <td>{{ row.quantity }}</td>
+                        <td>{{ row.item_name }}</td>
+                        <td>{{ row.created_at_text }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="empty-note">No equipment allocation history is available yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if equipment_role != 'worker' %}
+    <div class="equipment-card">
+        <div class="section-head">
+            <div>
+                <h3>Transaction History</h3>
+                <p>Every stock movement recorded at this level, including reserve updates and downstream assignments.</p>
+            </div>
+            <span class="mini-pill"><i class="fas fa-timeline"></i>{{ transaction_rows|length }} entries</span>
+        </div>
+        <div class="table-responsive history-table">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Note</th>
+                        <th>When</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in transaction_rows %}
+                    <tr>
+                        <td>{{ row.transaction_label }}</td>
+                        <td>{{ row.from_scope_name }}</td>
+                        <td>{{ row.to_scope_name }}</td>
+                        <td>
+                            <strong>{{ row.item_name }}</strong><br>
+                            <small class="text-muted">{{ row.category_name }}</small>
+                        </td>
+                        <td>{{ row.quantity }}</td>
+                        <td>{{ row.notes or 'No note' }}</td>
+                        <td>{{ row.created_at_text }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="empty-note">No equipment transactions have been recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="equipment-card">
+        <div class="section-head">
+            <div>
+                <h3>Closed Request History</h3>
+                <p>Recently fulfilled or rejected requests retained for audit and follow-up.</p>
+            </div>
+            <span class="mini-pill"><i class="fas fa-folder-open"></i>{{ incoming_closed_requests|length }} recent</span>
+        </div>
+        <div class="table-responsive history-table">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Requester</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Target</th>
+                        <th>Updated</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in incoming_closed_requests %}
+                    <tr>
+                        <td>{{ row.requester_name }}{% if row.requester_scope_name %}<br><small class="text-muted">{{ row.requester_scope_name }}</small>{% endif %}</td>
+                        <td>{{ row.item_name }}</td>
+                        <td>{{ row.quantity_fulfilled or row.quantity_requested }}</td>
+                        <td><span class="mini-pill">{{ row.status_label }}</span></td>
+                        <td>{{ row.target_scope_name }}</td>
+                        <td>{{ row.updated_at_text }}</td>
+                        <td>{{ row.notes or row.reason }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="empty-note">No closed requests in recent history yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>

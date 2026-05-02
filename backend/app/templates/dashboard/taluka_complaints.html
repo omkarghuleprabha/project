@@ -34,9 +34,31 @@
                         <strong>#{{ complaint.id }} {{ complaint.title }}</strong><br>
                         <small class="text-muted">{{ complaint.description[:80] }}{% if complaint.description and complaint.description|length > 80 %}...{% endif %}</small><br>
                         <small class="text-muted">Filed {{ complaint.created_at.strftime('%d %b %Y') if complaint.created_at else 'N/A' }}</small>
+                        {% if complaint.has_original_photo or complaint.has_resolution_photo %}
+                        <div class="d-flex gap-2 flex-wrap mt-2">
+                            {% if complaint.has_original_photo %}
+                            <a href="{{ complaint.original_photo_url }}" target="_blank" rel="noopener">
+                                <img src="{{ complaint.original_photo_url }}" alt="Citizen complaint photo" class="img-thumbnail" style="max-width: 86px; max-height: 86px;">
+                            </a>
+                            {% endif %}
+                            {% if complaint.has_resolution_photo %}
+                            <a href="{{ complaint.resolution_photo_url }}" target="_blank" rel="noopener">
+                                <img src="{{ complaint.resolution_photo_url }}" alt="Complaint completion photo" class="img-thumbnail" style="max-width: 86px; max-height: 86px;">
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </td>
                     <td>{{ complaint.citizen_name }}</td>
-                    <td>{{ complaint.village }}</td>
+                    <td>
+                        {{ complaint.village }}
+                        {% if complaint.has_coordinates %}
+                        <br><small class="text-muted">{{ complaint.coordinates_text }}</small>
+                        <br><a href="{{ complaint.map_url }}" target="_blank" rel="noopener" class="small">Open in Maps</a>
+                        {% elif complaint.map_url %}
+                        <br><a href="{{ complaint.map_url }}" target="_blank" rel="noopener" class="small">Open area in Maps</a>
+                        {% endif %}
+                    </td>
                     <td>{{ complaint.worker_name }}</td>
                     <td><span class="mini-badge {{ complaint.priority|lower }}">{{ complaint.priority }}</span></td>
                     <td><span class="mini-badge {{ complaint.status_class|replace('-', '_') }}">{{ complaint.status }}</span></td>

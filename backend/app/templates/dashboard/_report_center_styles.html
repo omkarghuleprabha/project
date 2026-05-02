@@ -1,0 +1,175 @@
+<style>
+    .report-shell {
+        display: grid;
+        gap: 1.25rem;
+    }
+    .report-hero,
+    .report-panel,
+    .report-table-card,
+    .report-note-card {
+        border-radius: 22px;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    .report-hero {
+        padding: 1.4rem;
+        background:
+            radial-gradient(circle at top right, rgba(252, 163, 17, 0.14), transparent 28%),
+            linear-gradient(145deg, rgba(20, 33, 61, 0.98), rgba(35, 57, 91, 0.95));
+        color: #fff;
+    }
+    .report-hero p,
+    .report-hero small {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .hero-badges,
+    .report-actions,
+    .security-list,
+    .report-notes {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .hero-badge,
+    .security-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 0.9rem;
+    }
+    .report-panel,
+    .report-table-card,
+    .report-note-card {
+        padding: 1.2rem;
+    }
+    .dataset-grid,
+    .report-stats {
+        display: grid;
+        gap: 0.9rem;
+    }
+    .dataset-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .dataset-card input {
+        display: none;
+    }
+    .dataset-card label {
+        display: block;
+        height: 100%;
+        padding: 1rem;
+        border-radius: 18px;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+        background: linear-gradient(180deg, rgba(20, 33, 61, 0.03), rgba(20, 33, 61, 0.01));
+        cursor: pointer;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .dataset-card label:hover {
+        transform: translateY(-2px);
+        border-color: rgba(20, 33, 61, 0.16);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+    }
+    .dataset-card input:checked + label {
+        border-color: rgba(252, 163, 17, 0.7);
+        background: linear-gradient(180deg, rgba(252, 163, 17, 0.12), rgba(255, 255, 255, 0.96));
+        box-shadow: 0 14px 28px rgba(252, 163, 17, 0.14);
+    }
+    .dataset-card i {
+        font-size: 1.1rem;
+        color: var(--navy);
+    }
+    .dataset-card strong {
+        display: block;
+        margin-top: 0.7rem;
+        margin-bottom: 0.35rem;
+    }
+    .dataset-card span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+    }
+    .report-stats {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .report-stat {
+        padding: 1rem;
+        border-radius: 18px;
+        color: #fff;
+        min-height: 124px;
+    }
+    .report-stat.navy { background: linear-gradient(160deg, #14213d, #23395b); }
+    .report-stat.sky { background: linear-gradient(160deg, #1f6aa5, #4ea8de); }
+    .report-stat.mint { background: linear-gradient(160deg, #1f7a70, #2a9d8f); }
+    .report-stat.amber { background: linear-gradient(160deg, #c98600, #fca311); }
+    .report-stat.rose { background: linear-gradient(160deg, #b94f35, #e76f51); }
+    .report-stat strong {
+        display: block;
+        margin-top: 0.55rem;
+        font-size: 1.55rem;
+    }
+    .report-stat small {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .report-panel .form-label,
+    .report-table-card .table-note,
+    .report-note-card p,
+    .report-note-card li {
+        color: var(--muted);
+    }
+    .report-table-card .table-responsive {
+        border-radius: 16px;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+    .report-table-card table {
+        margin-bottom: 0;
+    }
+    .report-table-card thead th {
+        border-bottom: none;
+        background: rgba(20, 33, 61, 0.06);
+        color: var(--navy);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .report-table-card tbody td {
+        font-size: 0.92rem;
+        vertical-align: middle;
+    }
+    .preview-total {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(20, 33, 61, 0.06);
+        color: var(--navy);
+        font-size: 0.85rem;
+    }
+    .report-empty {
+        padding: 1.6rem;
+        border-radius: 18px;
+        border: 1px dashed rgba(20, 33, 61, 0.16);
+        text-align: center;
+        color: var(--muted);
+        background: rgba(20, 33, 61, 0.02);
+    }
+    .report-note-card ul {
+        margin: 0;
+        padding-left: 1rem;
+    }
+    @media (max-width: 991px) {
+        .report-actions a,
+        .report-actions button {
+            width: 100%;
+        }
+        .hero-badges {
+            margin-top: 1rem;
+        }
+    }
+</style>

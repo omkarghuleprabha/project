@@ -40,6 +40,15 @@
         return 'pending';
     }
 
+    function explicitPosition(marker) {
+        const latitude = Number(marker.latitude);
+        const longitude = Number(marker.longitude);
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+            return null;
+        }
+        return { lat: latitude, lng: longitude };
+    }
+
     function hashCoordinate(seed, center) {
         let hash = 0;
         const source = String(seed || 'scope');
@@ -119,11 +128,12 @@
 
     async function resolveMarkers(center) {
         return Promise.all((mapData.markers || []).map(async (marker, index) => {
-            const geocoded = await geocodeQuery(marker.map_query);
+            const exactPosition = explicitPosition(marker);
+            const geocoded = exactPosition ? null : await geocodeQuery(marker.map_query);
             return {
                 ...marker,
                 status_class: statusClass(marker.status),
-                position: geocoded || hashCoordinate(marker.id || marker.location_label || index, center),
+                position: exactPosition || geocoded || hashCoordinate(marker.id || marker.location_label || index, center),
             };
         }));
     }
@@ -146,6 +156,8 @@
                 <div>${escapeHtml(marker.location_label)}</div>
                 <div>${escapeHtml(marker.secondary_label || '')}</div>
                 <div>${escapeHtml(marker.time_label || 'N/A')}</div>
+                ${marker.coordinates_text ? `<div>${escapeHtml(marker.coordinates_text)}</div>` : ''}
+                ${marker.map_url ? `<div><a href="${escapeHtml(marker.map_url)}" target="_blank" rel="noopener">Open in Maps</a></div>` : ''}
             </div>
         `;
     }
@@ -167,6 +179,8 @@
                 </div>
                 <div class="scope-list-meta">${escapeHtml(marker.secondary_label || '')}</div>
                 <div class="scope-list-time">${escapeHtml(marker.time_label || 'N/A')}</div>
+                ${marker.coordinates_text ? `<div class="scope-list-meta">${escapeHtml(marker.coordinates_text)}</div>` : ''}
+                ${marker.map_url ? `<div class="scope-list-meta"><a href="${escapeHtml(marker.map_url)}" target="_blank" rel="noopener">Open in Maps</a></div>` : ''}
             </div>
         `).join('');
     }

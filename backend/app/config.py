@@ -2,7 +2,8 @@ import os
 from datetime import timedelta
 
 # Base directory for the entire project
-BASE_DIR = r"D:\INTERSHIP\Garbage Management System\Garbage Management System\smart-garbage-management"
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+IS_PRODUCTION = os.environ.get('ENV') == 'production'
 
 class Config:
     # ========================================
@@ -19,7 +20,8 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_COOKIE_SECURE = os.environ.get('ENV') == 'production'
+    SESSION_COOKIE_SECURE = IS_PRODUCTION
+    PREFERRED_URL_SCHEME = 'https' if IS_PRODUCTION else 'http'
 
     # ========================================
     # 2. MYSQL DATABASE SETTINGS 🗄️
@@ -80,11 +82,16 @@ class Config:
     # ========================================
     # 5. JWT & API SETTINGS 🔐
     # ========================================
-    JWT_COOKIE_SECURE = os.environ.get('ENV') == 'production'
+    JWT_COOKIE_SECURE = IS_PRODUCTION
     JWT_COOKIE_CSRF_PROTECT = True
     JWT_TOKEN_LOCATION = ['cookies', 'headers', 'json']
     JWT_ACCESS_COOKIES = ['access_token']
     JWT_REFRESH_COOKIES = ['refresh_token']
+    PROXY_FIX_X_FOR = int(os.environ.get('PROXY_FIX_X_FOR', '1' if IS_PRODUCTION else '0'))
+    PROXY_FIX_X_PROTO = int(os.environ.get('PROXY_FIX_X_PROTO', '1' if IS_PRODUCTION else '0'))
+    PROXY_FIX_X_HOST = int(os.environ.get('PROXY_FIX_X_HOST', '1' if IS_PRODUCTION else '0'))
+    PROXY_FIX_X_PORT = int(os.environ.get('PROXY_FIX_X_PORT', '1' if IS_PRODUCTION else '0'))
+    PROXY_FIX_X_PREFIX = int(os.environ.get('PROXY_FIX_X_PREFIX', '0'))
 
     # CORS Settings
     CORS_ALLOWED_ORIGINS = [

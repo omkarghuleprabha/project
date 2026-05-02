@@ -1,0 +1,45 @@
+<div class="row g-3" data-complaint-location>
+    <div class="col-md-4">
+        <label class="form-label">District</label>
+        <select
+            class="form-select searchable-select"
+            data-location-select="district"
+            required
+        >
+            <option value="">Select District</option>
+            {% for district in district_options %}
+                <option value="{{ district.id }}">{{ district.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="district" data-location-name="district">
+        <input type="hidden" name="district_id" data-location-id="district">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Taluka</label>
+        <select
+            class="form-select searchable-select"
+            data-location-select="taluka"
+            required
+            disabled
+        >
+            <option value="">Select District First</option>
+        </select>
+        <input type="hidden" name="taluka" data-location-name="taluka">
+        <input type="hidden" name="taluka_id" data-location-id="taluka">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Village</label>
+        <select
+            class="form-select searchable-select"
+            data-location-select="village"
+            required
+            disabled
+        >
+            <option value="">Select Taluka First</option>
+        </select>
+        <input type="hidden" name="village" data-location-name="village">
+        <input type="hidden" name="village_id" data-location-id="village">
+    </div>
+</div>

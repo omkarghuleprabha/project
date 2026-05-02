@@ -1,0 +1,16 @@
+{% extends "dashboard/state_base.html" %}
+
+{% block page_title %}State Reports{% endblock %}
+{% block page_subtitle %}Preview and export secure reports across districts, talukas, and villages inside {{ state_profile.state_name }}.{% endblock %}
+
+{% block state_head %}
+{% include "dashboard/_report_center_styles.html" %}
+{% endblock %}
+
+{% block state_content %}
+{% include "dashboard/_report_center_content.html" %}
+{% endblock %}
+
+{% block state_scripts %}
+{% include "dashboard/_report_center_script.html" %}
+{% endblock %}

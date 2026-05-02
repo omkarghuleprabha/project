@@ -1,0 +1,62 @@
+{% extends "dashboard/state_base.html" %}
+
+{% block page_title %}Public Inquiries{% endblock %}
+{% block page_subtitle %}Review questions and suggestions submitted from the public home page contact form.{% endblock %}
+
+{% block state_head %}
+<style>
+    .inquiry-card {
+        padding: 1rem;
+        border: 1px solid rgba(20, 33, 61, 0.08);
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(20, 33, 61, 0.03), rgba(20, 33, 61, 0.01));
+    }
+    .inquiry-message {
+        white-space: pre-wrap;
+        color: var(--ink);
+    }
+</style>
+{% endblock %}
+
+{% block state_content %}
+<div class="content-card">
+    <div class="section-head">
+        <div>
+            <h3>Citizen Inquiry Inbox</h3>
+            <p>Every submission from the home page contact form is stored in the `inquiries` table and listed here for state admin review.</p>
+        </div>
+        <span class="mini-badge neutral">{{ inquiries|length }} total</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Citizen</th>
+                    <th>Mobile</th>
+                    <th>Message</th>
+                    <th>Submitted</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inquiry in inquiries %}
+                <tr>
+                    <td><strong>#{{ inquiry.id }}</strong></td>
+                    <td>{{ inquiry.full_name }}</td>
+                    <td>{{ inquiry.mobile_number }}</td>
+                    <td>
+                        <div class="inquiry-card">
+                            <div class="inquiry-message">{{ inquiry.message }}</div>
+                        </div>
+                    </td>
+                    <td>{{ inquiry.created_at.strftime('%d %b %Y %I:%M %p') if inquiry.created_at else 'N/A' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="empty-note">No inquiries have been submitted from the home page yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

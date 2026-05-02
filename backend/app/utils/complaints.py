@@ -1,3 +1,9 @@
+import os
+import uuid
+
+from werkzeug.utils import secure_filename
+
+
 COMPLAINT_STATUS_MAP = {
     'pending': ('pending', 'Pending'),
     'assigned': ('assigned', 'Assigned'),
@@ -19,7 +25,13 @@ COMPLAINT_WORKFLOW_COLUMNS = {
     'assigned_at': "ALTER TABLE complaints ADD COLUMN assigned_at TIMESTAMP NULL DEFAULT NULL",
     'updated_at': "ALTER TABLE complaints ADD COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP",
     'resolved_at': "ALTER TABLE complaints ADD COLUMN resolved_at TIMESTAMP NULL DEFAULT NULL",
+    'latitude': "ALTER TABLE complaints ADD COLUMN latitude DECIMAL(10, 7) DEFAULT NULL",
+    'longitude': "ALTER TABLE complaints ADD COLUMN longitude DECIMAL(10, 7) DEFAULT NULL",
+    'location_accuracy_meters': "ALTER TABLE complaints ADD COLUMN location_accuracy_meters DECIMAL(10, 2) DEFAULT NULL",
+    'resolution_photo_path': "ALTER TABLE complaints ADD COLUMN resolution_photo_path VARCHAR(255) DEFAULT NULL",
 }
+
+COMPLAINT_IMAGE_COLUMNS = ('photo_path', 'garbage_img')
 
 
 def _column_name(row):
@@ -42,6 +54,37 @@ def ensure_complaint_workflow_columns(cursor):
             cursor.execute(ddl)
             existing_columns.add(column_name)
     return existing_columns
+
+
+def complaint_original_photo_column(existing_columns):
+    for column_name in COMPLAINT_IMAGE_COLUMNS:
+        if column_name in (existing_columns or set()):
+            return column_name
+    return None
+
+
+def complaint_original_photo_select(existing_columns, table_alias='c', output_alias='original_photo_path'):
+    column_name = complaint_original_photo_column(existing_columns)
+    if not column_name:
+        return f"NULL AS {output_alias}"
+    return f"{table_alias}.{column_name} AS {output_alias}"
+
+
+def save_complaint_upload(file_storage, root_path, prefix='complaint'):
+    if not file_storage or not getattr(file_storage, 'filename', ''):
+        return None
+
+    filename = secure_filename(file_storage.filename)
+    if '.' in filename:
+        extension = filename.rsplit('.', 1)[1].lower()
+    else:
+        extension = 'jpg'
+
+    unique_filename = f"{prefix}_{uuid.uuid4().hex}.{extension}"
+    upload_folder = os.path.join(root_path, 'static', 'uploads', 'complaints')
+    os.makedirs(upload_folder, exist_ok=True)
+    file_storage.save(os.path.join(upload_folder, unique_filename))
+    return unique_filename
 
 
 def complaint_status_key(status, default='pending'):

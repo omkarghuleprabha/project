@@ -1,6 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, redirect, session, url_for, flash, jsonify
 from app.utils.db import get_db
+from app.utils.location import ensure_request_location_columns, parse_submitted_location
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
 from app.routes.auth_routes import _get_citizen_dashboard_data, _get_user_complaints
@@ -19,6 +20,13 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 # Helper to check file types
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def _get_post_redirect_target(default_endpoint):
+    next_page = (request.form.get("next_page") or "").strip()
+    if next_page.startswith("/"):
+        return next_page
+    return url_for(default_endpoint)
 
 # ---------- USER LOGIN ----------
 @user_bp.route("/login", methods=["GET", "POST"])
@@ -68,22 +76,49 @@ def user_dashboard():
 # ---------- NEW COMPLAINT / REQUEST ----------
 @user_bp.route("/new_request", methods=["POST"])
 def new_request():
-    if "user_id" not in session: return redirect(url_for("user_bp.user_login"))
+    if "user_id" not in session:
+        return redirect(url_for("user_bp.user_login"))
+
+    redirect_target = _get_post_redirect_target("user_bp.user_dashboard")
     
     pickup_type = request.form.get("pickupType", "Door-to-Door")
     waste_type = request.form.get("wasteType", "Mixed Waste")
     scheduled_time = request.form.get("scheduled_time")
     garbage_type = f"{pickup_type} - {waste_type}"
+    try:
+        location = parse_submitted_location(request.form)
+    except ValueError as exc:
+        flash(str(exc), "warning")
+        return redirect(redirect_target)
     
     try:
         conn = get_db()
         cursor = conn.cursor()
-        query = """
-            INSERT INTO requests (user_id, garbage_type, status, amount, created_at) 
-            VALUES (%s, %s, 'pending', %s, NOW())
-        """
         amount = 300 if pickup_type.lower() == "bulk" else 150
-        cursor.execute(query, (session["user_id"], garbage_type, amount))
+        request_columns = ensure_request_location_columns(cursor)
+
+        columns = ["user_id", "garbage_type", "status", "amount", "created_at"]
+        values = [session["user_id"], garbage_type, "pending", amount]
+        placeholders = ["%s", "%s", "%s", "%s", "NOW()"]
+
+        if "latitude" in request_columns:
+            columns.append("latitude")
+            values.append(location.get("latitude"))
+            placeholders.append("%s")
+        if "longitude" in request_columns:
+            columns.append("longitude")
+            values.append(location.get("longitude"))
+            placeholders.append("%s")
+        if "location_accuracy_meters" in request_columns:
+            columns.append("location_accuracy_meters")
+            values.append(location.get("location_accuracy_meters"))
+            placeholders.append("%s")
+
+        query = f"""
+            INSERT INTO requests ({", ".join(columns)})
+            VALUES ({", ".join(placeholders)})
+        """
+        cursor.execute(query, tuple(values))
         conn.commit()
         conn.close()
         flash("Your garbage pickup request has been filed successfully.", "success")
@@ -91,7 +126,7 @@ def new_request():
         print(f"Error: {e}")
         flash("Failed to file request. Try again.", "danger")
         
-    return redirect(url_for("user_bp.user_dashboard"))
+    return redirect(redirect_target)
 
 
 @user_bp.route("/process-payment", methods=["POST"])

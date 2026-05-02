@@ -1,0 +1,143 @@
+<script>
+(() => {
+    if (!window.jQuery) {
+        return;
+    }
+
+    const $ = window.jQuery;
+
+    function syncHiddenFields($select, $idInput, $nameInput) {
+        const selectedValue = $select.val() || '';
+        const selectedText = selectedValue ? $select.find('option:selected').text() : '';
+
+        if ($idInput.length) {
+            $idInput.val(selectedValue);
+        }
+
+        if ($nameInput.length) {
+            $nameInput.val(selectedText);
+        }
+    }
+
+    function setSelectOptions($select, placeholderText, items, disabled) {
+        $select.empty().append(new Option(placeholderText, ''));
+        items.forEach((item) => {
+            $select.append(new Option(item.name, item.id));
+        });
+        $select.prop('disabled', disabled);
+        $select.val('').trigger('change.select2');
+    }
+
+    function initSelect2($select, $dropdownParent) {
+        if (!$.fn.select2) {
+            return;
+        }
+
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
+
+        $select.select2({
+            width: '100%',
+            dropdownParent: $dropdownParent,
+        });
+    }
+
+    async function fetchOptions(url) {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed request: ${response.status}`);
+        }
+        const payload = await response.json();
+        return (payload || []).map((item) => ({
+            id: String(item.id),
+            name: item.name,
+        }));
+    }
+
+    $(document).ready(() => {
+        $('[data-complaint-location]').each(function () {
+            const $container = $(this);
+            const $modal = $container.closest('.modal');
+
+            const $district = $container.find('[data-location-select="district"]');
+            const $taluka = $container.find('[data-location-select="taluka"]');
+            const $village = $container.find('[data-location-select="village"]');
+
+            const $districtId = $container.find('[data-location-id="district"]');
+            const $talukaId = $container.find('[data-location-id="taluka"]');
+            const $villageId = $container.find('[data-location-id="village"]');
+
+            const $districtName = $container.find('[data-location-name="district"]');
+            const $talukaName = $container.find('[data-location-name="taluka"]');
+            const $villageName = $container.find('[data-location-name="village"]');
+
+            initSelect2($district, $modal);
+            initSelect2($taluka, $modal);
+            initSelect2($village, $modal);
+
+            syncHiddenFields($district, $districtId, $districtName);
+            syncHiddenFields($taluka, $talukaId, $talukaName);
+            syncHiddenFields($village, $villageId, $villageName);
+
+            $district.off('change.complaintLocation').on('change.complaintLocation', async function () {
+                syncHiddenFields($district, $districtId, $districtName);
+                setSelectOptions($taluka, 'Loading Talukas...', [], true);
+                setSelectOptions($village, 'Select Taluka First', [], true);
+                syncHiddenFields($taluka, $talukaId, $talukaName);
+                syncHiddenFields($village, $villageId, $villageName);
+
+                if (!$district.val()) {
+                    setSelectOptions($taluka, 'Select District First', [], true);
+                    return;
+                }
+
+                try {
+                    const talukas = await fetchOptions(`/auth/get_talukas/${$district.val()}`);
+                    setSelectOptions(
+                        $taluka,
+                        talukas.length ? 'Select Taluka' : 'No Talukas Found',
+                        talukas,
+                        talukas.length === 0
+                    );
+                } catch (error) {
+                    setSelectOptions($taluka, 'Unable To Load Talukas', [], true);
+                }
+            });
+
+            $taluka.off('change.complaintLocation').on('change.complaintLocation', async function () {
+                syncHiddenFields($taluka, $talukaId, $talukaName);
+                setSelectOptions($village, 'Loading Villages...', [], true);
+                syncHiddenFields($village, $villageId, $villageName);
+
+                if (!$taluka.val()) {
+                    setSelectOptions($village, 'Select Taluka First', [], true);
+                    return;
+                }
+
+                try {
+                    const villages = await fetchOptions(`/auth/get_villages/${$taluka.val()}`);
+                    setSelectOptions(
+                        $village,
+                        villages.length ? 'Select Village' : 'No Villages Found',
+                        villages,
+                        villages.length === 0
+                    );
+                } catch (error) {
+                    setSelectOptions($village, 'Unable To Load Villages', [], true);
+                }
+            });
+
+            $village.off('change.complaintLocation').on('change.complaintLocation', function () {
+                syncHiddenFields($village, $villageId, $villageName);
+            });
+
+            $modal.off('shown.bs.modal.complaintLocation').on('shown.bs.modal.complaintLocation', function () {
+                initSelect2($district, $modal);
+                initSelect2($taluka, $modal);
+                initSelect2($village, $modal);
+            });
+        });
+    });
+})();
+</script>

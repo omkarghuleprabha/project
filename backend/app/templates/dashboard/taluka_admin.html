@@ -99,6 +99,20 @@
                             <td>
                                 <strong>#{{ item.id }} {{ item.title }}</strong><br>
                                 <small class="text-muted">{{ item.village }} • {{ item.created_at.strftime('%d %b %Y') if item.created_at else 'N/A' }}</small>
+                                {% if item.has_original_photo or item.has_resolution_photo %}
+                                <div class="d-flex gap-2 flex-wrap mt-2">
+                                    {% if item.has_original_photo %}
+                                    <a href="{{ item.original_photo_url }}" target="_blank" rel="noopener">
+                                        <img src="{{ item.original_photo_url }}" alt="Citizen complaint photo" class="img-thumbnail" style="max-width: 74px; max-height: 74px;">
+                                    </a>
+                                    {% endif %}
+                                    {% if item.has_resolution_photo %}
+                                    <a href="{{ item.resolution_photo_url }}" target="_blank" rel="noopener">
+                                        <img src="{{ item.resolution_photo_url }}" alt="Complaint completion photo" class="img-thumbnail" style="max-width: 74px; max-height: 74px;">
+                                    </a>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
                             </td>
                             <td>{{ item.citizen_name }}</td>
                             <td>
@@ -167,7 +181,15 @@
                         <small class="text-muted">₹{{ request.amount }} • {{ request.created_at.strftime('%d %b %Y %I:%M %p') if request.created_at else 'N/A' }}</small>
                     </td>
                     <td>{{ request.citizen_name }}</td>
-                    <td>{{ request.village_name }}</td>
+                    <td>
+                        {{ request.village_name }}
+                        {% if request.has_coordinates %}
+                        <br><small class="text-muted">{{ request.coordinates_text }}</small>
+                        <br><a href="{{ request.map_url }}" target="_blank" rel="noopener" class="small">Open in Maps</a>
+                        {% elif request.map_url %}
+                        <br><a href="{{ request.map_url }}" target="_blank" rel="noopener" class="small">Open area in Maps</a>
+                        {% endif %}
+                    </td>
                     <td><span class="mini-badge {{ request.status|replace(' ', '_')|lower }}">{{ request.status|replace('_', ' ')|title }}</span></td>
                     <td>{{ request.worker_name }}</td>
                     <td>

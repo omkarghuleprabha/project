@@ -20,6 +20,7 @@
                     <th>Taluka</th>
                     <th>Villages</th>
                     <th>Workers</th>
+                    <th>Verification</th>
                     <th>District Tasks</th>
                     <th>Action</th>
                 </tr>
@@ -35,13 +36,38 @@
                     <td>{{ admin.taluka_name }}</td>
                     <td>{{ admin.villages }}</td>
                     <td>{{ admin.workers }}</td>
+                    <td>
+                        <span class="mini-badge {{ admin.verification_status }}">{{ admin.verification_status_label }}</span><br>
+                        <small class="text-muted">Aadhaar: {{ admin.aadhaar_no or 'Not added' }}</small>
+                        <div class="d-flex gap-2 flex-wrap mt-2">
+                            {% if admin.has_aadhaar_photo %}
+                            <a href="{{ admin.aadhaar_photo_url }}" class="btn btn-outline-dark btn-sm" target="_blank">Aadhaar Photo</a>
+                            {% endif %}
+                            {% if admin.has_selfie_photo %}
+                            <a href="{{ admin.selfie_photo_url }}" class="btn btn-outline-dark btn-sm" target="_blank">Selfie</a>
+                            {% endif %}
+                        </div>
+                        {% if admin.verification_notes %}
+                        <small class="text-muted d-block mt-2">{{ admin.verification_notes }}</small>
+                        {% endif %}
+                    </td>
                     <td>{{ admin.completed_district_tasks }}/{{ admin.total_district_tasks }}</td>
                     <td>
-                        <a href="{{ url_for('auth_bp.district_taluka_admin_detail', taluka_admin_id=admin.id) }}" class="btn btn-outline-dark btn-sm">View Details</a>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('auth_bp.district_taluka_admin_detail', taluka_admin_id=admin.id) }}" class="btn btn-outline-dark btn-sm">View Details</a>
+                            <form method="POST" action="{{ url_for('auth_bp.district_verify_taluka_admin', taluka_admin_id=admin.id) }}" class="d-grid gap-2">
+                                <input type="hidden" name="next_page" value="{{ request.path }}">
+                                <input type="text" class="form-control form-control-sm" name="verification_notes" placeholder="Optional verification note">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="submit" class="btn btn-success btn-sm" name="decision" value="approved">Approve</button>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" name="decision" value="rejected">Reject</button>
+                                </div>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="6" class="empty-note">No taluka admins are assigned in this district yet.</td></tr>
+                <tr><td colspan="7" class="empty-note">No taluka admins are assigned in this district yet.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

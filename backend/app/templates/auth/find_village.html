@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Village | Smart Garbage Pro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --page-bg: #eef6f4;
+            --ink: #10231f;
+            --muted: #5e746f;
+            --line: rgba(16, 35, 31, 0.12);
+            --panel: rgba(255, 255, 255, 0.88);
+            --deep-green: #0f766e;
+            --forest: #14532d;
+            --mint: #dcfce7;
+            --gold: #f59e0b;
+            --shadow: 0 25px 70px rgba(15, 118, 110, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(20, 184, 166, 0.18), transparent 34%),
+                radial-gradient(circle at top right, rgba(245, 158, 11, 0.14), transparent 28%),
+                linear-gradient(180deg, #f9fcfb 0%, var(--page-bg) 52%, #e7f1ef 100%);
+            color: var(--ink);
+            font-family: 'Manrope', sans-serif;
+            padding: 28px 0 40px;
+        }
+
+        .page-shell {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        .hero-card,
+        .filter-card,
+        .results-card {
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+        }
+
+        .hero-card {
+            position: relative;
+            overflow: hidden;
+            padding: 34px;
+            margin-bottom: 24px;
+        }
+
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            inset: auto -60px -70px auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(20, 184, 166, 0.22), rgba(20, 184, 166, 0));
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.12);
+            color: var(--deep-green);
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .hero-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            line-height: 1.02;
+            margin: 18px 0 14px;
+            font-weight: 800;
+            max-width: 720px;
+        }
+
+        .hero-copy {
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.8;
+            max-width: 700px;
+            margin-bottom: 0;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .top-actions .btn {
+            border-radius: 16px;
+            padding: 12px 18px;
+            font-weight: 700;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 28px;
+        }
+
+        .stat-card {
+            padding: 18px 20px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(16, 35, 31, 0.08);
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.84rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            line-height: 1;
+            font-weight: 800;
+        }
+
+        .filter-card,
+        .results-card {
+            padding: 26px;
+        }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .section-copy {
+            color: var(--muted);
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--deep-green);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 52px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            padding: 0.85rem 1rem;
+            box-shadow: none;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: rgba(15, 118, 110, 0.45);
+            box-shadow: 0 0 0 0.2rem rgba(20, 184, 166, 0.12);
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .action-row .btn {
+            min-height: 52px;
+            border-radius: 16px;
+            padding: 0 22px;
+            font-weight: 800;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, var(--deep-green) 0%, #0f5f66 100%);
+            border: none;
+            color: white;
+        }
+
+        .btn-search:hover {
+            color: white;
+            background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+        }
+
+        .btn-reset {
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+        }
+
+        .results-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .results-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: var(--mint);
+            color: var(--forest);
+            font-weight: 800;
+        }
+
+        .active-filters {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .table-shell {
+            border: 1px solid rgba(16, 35, 31, 0.08);
+            border-radius: 22px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f7fbfa;
+            color: var(--deep-green);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(16, 35, 31, 0.08);
+            padding: 16px 18px;
+        }
+
+        .table tbody td {
+            padding: 16px 18px;
+            vertical-align: middle;
+            border-color: rgba(16, 35, 31, 0.06);
+        }
+
+        .village-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.08);
+            color: var(--deep-green);
+            font-weight: 800;
+        }
+
+        .empty-state {
+            padding: 42px 20px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 14px;
+        }
+
+        .hint-bar {
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: 52px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            padding: 11px 14px;
+            background: white;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 50px;
+            right: 10px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--ink);
+            line-height: 28px;
+            padding-left: 0;
+        }
+
+        @media (max-width: 991px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .top-actions {
+                justify-content: flex-start;
+                margin-top: 18px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            body {
+                padding-top: 18px;
+            }
+
+            .hero-card,
+            .filter-card,
+            .results-card {
+                padding: 20px;
+                border-radius: 24px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-toolbar {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <section class="hero-card">
+            <div class="row align-items-start g-4">
+                <div class="col-lg-8">
+                    <div class="eyebrow">
+                        <i class="fas fa-map-location-dot"></i>
+                        Village Discovery Portal
+                    </div>
+                    <h1 class="hero-title">Find any village with state, district, and taluka filters in one clean view.</h1>
+                    <p class="hero-copy">Use the dropdown directory to browse the full location hierarchy, or type a village name in the search box to jump directly to matching results.</p>
+                </div>
+                <div class="col-lg-4">
+                    <div class="top-actions">
+                        <a href="{{ url_for('auth_bp.register') }}" class="btn btn-light border">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Register
+                        </a>
+                        <a href="{{ url_for('main_bp.home') }}" class="btn btn-dark">
+                            <i class="fas fa-house me-2"></i>Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">States</div>
+                    <div class="stat-value">{{ directory_stats.states_count or 0 }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Districts</div>
+                    <div class="stat-value">{{ directory_stats.districts_count or 0 }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Talukas</div>
+                    <div class="stat-value">{{ directory_stats.talukas_count or 0 }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Villages</div>
+                    <div class="stat-value">{{ directory_stats.villages_count or 0 }}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="filter-card mb-4">
+            <h2 class="section-title">Browse Location Directory</h2>
+            <p class="section-copy">Select any combination of filters below, then search to see matching villages and their full hierarchy.</p>
+
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-6">
+                    <label for="state_id" class="form-label">State</label>
+                    <select id="state_id" class="form-select">
+                        <option value="">All States</option>
+                        {% for state in states %}
+                            <option value="{{ state.id }}">{{ state.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label for="district_id" class="form-label">District</label>
+                    <select id="district_id" class="form-select" disabled>
+                        <option value="">All Districts</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label for="taluka_id" class="form-label">Taluka</label>
+                    <select id="taluka_id" class="form-select" disabled>
+                        <option value="">All Talukas</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label for="village_id" class="form-label">Village Dropdown</label>
+                    <select id="village_id" class="form-select" disabled>
+                        <option value="">All Villages</option>
+                    </select>
+                </div>
+                <div class="col-lg-8">
+                    <label for="village_search" class="form-label">Search Village Name</label>
+                    <input type="text" id="village_search" class="form-control" placeholder="Type village name, ward name, or partial text">
+                </div>
+                <div class="col-lg-4 d-flex align-items-end">
+                    <div class="action-row w-100">
+                        <button type="button" id="search_button" class="btn btn-search flex-grow-1">
+                            <i class="fas fa-magnifying-glass me-2"></i>Search Village
+                        </button>
+                        <button type="button" id="reset_button" class="btn btn-reset">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="results-card">
+            <div class="results-toolbar">
+                <div>
+                    <h2 class="section-title mb-1">Search Results</h2>
+                    <div id="active_filters" class="active-filters">Showing the first available villages from the directory.</div>
+                </div>
+                <div id="results_badge" class="results-badge">
+                    <i class="fas fa-list-check"></i>
+                    Loading villages...
+                </div>
+            </div>
+
+            <div class="table-shell">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>State</th>
+                                <th>District</th>
+                                <th>Taluka</th>
+                                <th>Village</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results_body">
+                            <tr>
+                                <td colspan="4">
+                                    <div class="empty-state">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <div>Loading village directory...</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="results_hint" class="hint-bar"></div>
+        </section>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        const stateSelect = $('#state_id');
+        const districtSelect = $('#district_id');
+        const talukaSelect = $('#taluka_id');
+        const villageSelect = $('#village_id');
+        const villageSearchInput = $('#village_search');
+        const resultsBody = $('#results_body');
+        const resultsBadge = $('#results_badge');
+        const resultsHint = $('#results_hint');
+        const activeFilters = $('#active_filters');
+
+        function setSelectOptions(selectElement, placeholder, items) {
+            selectElement.empty().append(new Option(placeholder, ''));
+            items.forEach(item => selectElement.append(new Option(item.name, item.id)));
+            selectElement.val('').trigger('change.select2');
+        }
+
+        function setLoadingState(message) {
+            resultsBadge.html(`<i class="fas fa-spinner fa-spin"></i> ${message}`);
+        }
+
+        function getFilterSummary() {
+            const summary = [];
+            if (stateSelect.val()) summary.push(`State: ${stateSelect.find('option:selected').text()}`);
+            if (districtSelect.val()) summary.push(`District: ${districtSelect.find('option:selected').text()}`);
+            if (talukaSelect.val()) summary.push(`Taluka: ${talukaSelect.find('option:selected').text()}`);
+            if (villageSelect.val()) summary.push(`Village: ${villageSelect.find('option:selected').text()}`);
+            if (villageSearchInput.val().trim()) summary.push(`Search: "${villageSearchInput.val().trim()}"`);
+            return summary.length ? summary.join(' | ') : 'Showing the first available villages from the directory.';
+        }
+
+        function renderRows(rows) {
+            if (!rows.length) {
+                resultsBody.html(`
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <i class="fas fa-map-pin"></i>
+                                <div class="fw-bold mb-2">No villages matched this search.</div>
+                                <div>Try another village name or reset the filters.</div>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+                return;
+            }
+
+            const html = rows.map(row => `
+                <tr>
+                    <td>${row.state_name}</td>
+                    <td>${row.district_name}</td>
+                    <td>${row.taluka_name}</td>
+                    <td><span class="village-pill"><i class="fas fa-location-dot"></i>${row.village_name}</span></td>
+                </tr>
+            `).join('');
+
+            resultsBody.html(html);
+        }
+
+        async function fetchOptions(url, selectElement, placeholder) {
+            const response = await fetch(url);
+            const data = await response.json();
+            setSelectOptions(selectElement, placeholder, data);
+            selectElement.prop('disabled', false);
+            return data;
+        }
+
+        async function runSearch() {
+            setLoadingState('Searching directory...');
+            activeFilters.text(getFilterSummary());
+
+            const params = new URLSearchParams();
+            if (stateSelect.val()) params.append('state_id', stateSelect.val());
+            if (districtSelect.val()) params.append('district_id', districtSelect.val());
+            if (talukaSelect.val()) params.append('taluka_id', talukaSelect.val());
+            if (villageSelect.val()) params.append('village_id', villageSelect.val());
+            if (villageSearchInput.val().trim()) params.append('search', villageSearchInput.val().trim());
+
+            const response = await fetch(`/auth/search-villages?${params.toString()}`);
+            const payload = await response.json();
+
+            renderRows(payload.rows || []);
+            resultsBadge.html(`<i class="fas fa-list-check"></i> ${payload.returned} village${payload.returned === 1 ? '' : 's'} shown`);
+
+            if (payload.limited) {
+                resultsHint.text(`Showing ${payload.returned} of ${payload.total} matching villages. Narrow the filters or search text to see a smaller list.`);
+            } else {
+                resultsHint.text(`${payload.total} matching village${payload.total === 1 ? '' : 's'} found.`);
+            }
+        }
+
+        function resetDependentSelects() {
+            setSelectOptions(districtSelect, 'All Districts', []);
+            setSelectOptions(talukaSelect, 'All Talukas', []);
+            setSelectOptions(villageSelect, 'All Villages', []);
+            districtSelect.prop('disabled', true);
+            talukaSelect.prop('disabled', true);
+            villageSelect.prop('disabled', true);
+        }
+
+        $(document).ready(function() {
+            [stateSelect, districtSelect, talukaSelect, villageSelect].forEach(selectElement => {
+                selectElement.select2({ width: '100%' });
+            });
+
+            stateSelect.on('change', async function() {
+                resetDependentSelects();
+                if (!this.value) {
+                    runSearch();
+                    return;
+                }
+                await fetchOptions(`/auth/get_districts/${this.value}`, districtSelect, 'All Districts');
+                runSearch();
+            });
+
+            districtSelect.on('change', async function() {
+                setSelectOptions(talukaSelect, 'All Talukas', []);
+                setSelectOptions(villageSelect, 'All Villages', []);
+                talukaSelect.prop('disabled', true);
+                villageSelect.prop('disabled', true);
+
+                if (!this.value) {
+                    runSearch();
+                    return;
+                }
+                await fetchOptions(`/auth/get_talukas/${this.value}`, talukaSelect, 'All Talukas');
+                runSearch();
+            });
+
+            talukaSelect.on('change', async function() {
+                setSelectOptions(villageSelect, 'All Villages', []);
+                villageSelect.prop('disabled', true);
+
+                if (!this.value) {
+                    runSearch();
+                    return;
+                }
+                await fetchOptions(`/auth/get_villages/${this.value}`, villageSelect, 'All Villages');
+                runSearch();
+            });
+
+            villageSelect.on('change', runSearch);
+            $('#search_button').on('click', runSearch);
+
+            villageSearchInput.on('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    runSearch();
+                }
+            });
+
+            $('#reset_button').on('click', function() {
+                stateSelect.val('').trigger('change');
+                villageSearchInput.val('');
+                activeFilters.text('Showing the first available villages from the directory.');
+            });
+
+            runSearch();
+        });
+    </script>
+</body>
+</html>

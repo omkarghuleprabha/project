@@ -1,0 +1,165 @@
+{% set unread_only_announcements = session.get('role') in ['worker', 'admin', 'district_admin'] %}
+<style>
+    .topbar {
+        position: relative;
+        z-index: 2200;
+        overflow: visible;
+    }
+    .topbar-actions {
+        position: relative;
+        z-index: 2201;
+        overflow: visible;
+    }
+    .announcement-dropdown {
+        position: relative;
+        z-index: 2202;
+    }
+    .announcement-menu {
+        width: min(380px, 92vw);
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        z-index: 2203 !important;
+    }
+    .announcement-list {
+        max-height: min(70vh, 480px);
+        overflow-y: auto;
+    }
+    .announcement-row-unread {
+        background: linear-gradient(180deg, rgba(252, 163, 17, 0.08), rgba(255, 255, 255, 0.96));
+    }
+    .announcement-status {
+        width: fit-content;
+        font-size: 0.7rem;
+    }
+</style>
+<div
+    class="dropdown announcement-dropdown"
+    data-announcement-mode="{% if unread_only_announcements %}unread{% else %}all{% endif %}"
+    data-mark-seen-url="{{ url_for('auth_bp.mark_announcements_seen_route') }}"
+    data-announcement-ids="{{ announcement_unread_ids | join(',') }}"
+>
+    <button
+        class="btn btn-light border rounded-pill px-3 py-2 position-relative announcement-bell"
+        type="button"
+        data-bs-toggle="dropdown"
+        data-bs-auto-close="outside"
+        aria-expanded="false"
+    >
+        <i class="fas fa-bell"></i>
+        {% if announcement_count %}
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ announcement_count }}
+        </span>
+        {% endif %}
+    </button>
+    <div class="dropdown-menu dropdown-menu-end shadow-sm p-0 announcement-menu">
+        <div class="px-3 py-3 border-bottom">
+            <strong>Announcements</strong>
+            <div class="small text-muted">
+                {% if unread_only_announcements %}
+                New announcements are highlighted first. Older announcements remain visible below.
+                {% else %}
+                Latest instructions for your service network.
+                {% endif %}
+            </div>
+        </div>
+        <div class="announcement-list">
+            {% if announcement_items %}
+                {% for item in announcement_items %}
+                {% set is_unread = item.id in announcement_unread_ids %}
+                <div class="px-3 py-3 border-bottom small announcement-row {% if is_unread %}announcement-row-unread{% endif %}" data-announcement-id="{{ item.id }}">
+                    <div class="d-flex justify-content-between gap-3 align-items-start mb-1">
+                        <div class="d-flex flex-column gap-1">
+                            <strong>{{ item.title }}</strong>
+                            {% if is_unread %}
+                            <span class="badge rounded-pill text-bg-danger announcement-status">New</span>
+                            {% endif %}
+                        </div>
+                        <span class="text-muted">{{ item.created_at_text }}</span>
+                    </div>
+                    <div class="text-muted mb-2">{{ item.message }}</div>
+                    <div class="d-flex flex-wrap gap-2 text-muted">
+                        <span><i class="fas fa-user-shield me-1"></i>{{ item.author_name or item.author_role_label }}</span>
+                        <span><i class="fas fa-users me-1"></i>{{ item.target_roles_text }}</span>
+                        <span><i class="fas fa-signal me-1"></i>{{ item.scope_label }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="px-3 py-4 text-center text-muted small announcement-empty">
+                    No announcements yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+        if (window.__announcementBellBound) {
+            return;
+        }
+        window.__announcementBellBound = true;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.announcement-dropdown').forEach(function (dropdown) {
+                var mode = dropdown.getAttribute('data-announcement-mode');
+                if (mode !== 'unread') {
+                    return;
+                }
+
+                var bell = dropdown.querySelector('.announcement-bell');
+                var list = dropdown.querySelector('.announcement-list');
+                if (!bell || !list) {
+                    return;
+                }
+
+                bell.addEventListener('shown.bs.dropdown', function () {
+                    if (dropdown.dataset.seenRequestSent === 'true') {
+                        return;
+                    }
+
+                    var announcementIds = (dropdown.getAttribute('data-announcement-ids') || '')
+                        .split(',')
+                        .map(function (value) { return value.trim(); })
+                        .filter(Boolean);
+
+                    if (!announcementIds.length) {
+                        dropdown.dataset.seenRequestSent = 'true';
+                        return;
+                    }
+
+                    dropdown.dataset.seenRequestSent = 'true';
+
+                    fetch(dropdown.getAttribute('data-mark-seen-url'), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ announcement_ids: announcementIds })
+                    }).then(function (response) {
+                        if (!response.ok) {
+                            dropdown.dataset.seenRequestSent = 'false';
+                            return;
+                        }
+                        dropdown.dataset.hasUnread = 'false';
+                        dropdown.setAttribute('data-announcement-ids', '');
+                        var badge = dropdown.querySelector('.badge');
+                        if (badge) {
+                            badge.remove();
+                        }
+                        dropdown.querySelectorAll('.announcement-status').forEach(function (chip) {
+                            chip.remove();
+                        });
+                        dropdown.querySelectorAll('.announcement-row-unread').forEach(function (row) {
+                            row.classList.remove('announcement-row-unread');
+                        });
+                    }).catch(function () {
+                        dropdown.dataset.seenRequestSent = 'false';
+                    });
+                });
+            });
+        });
+    })();
+</script>

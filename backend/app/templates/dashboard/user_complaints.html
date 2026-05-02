@@ -32,8 +32,30 @@
                     {% for comp in recent_complaints %}
                     <tr>
                         <td>#{{ comp.ticket_id }}</td>
-                        <td>{{ comp.title }}</td>
-                        <td>{{ comp.village }}, {{ comp.taluka }}</td>
+                        <td>
+                            {{ comp.title }}
+                            {% if comp.has_original_photo or comp.has_resolution_photo %}
+                            <div class="d-flex gap-2 flex-wrap mt-2">
+                                {% if comp.has_original_photo %}
+                                <a href="{{ comp.original_photo_url }}" target="_blank" rel="noopener">
+                                    <img src="{{ comp.original_photo_url }}" alt="Complaint photo" class="img-thumbnail" style="max-width: 86px; max-height: 86px;">
+                                </a>
+                                {% endif %}
+                                {% if comp.has_resolution_photo %}
+                                <a href="{{ comp.resolution_photo_url }}" target="_blank" rel="noopener">
+                                    <img src="{{ comp.resolution_photo_url }}" alt="Completion photo" class="img-thumbnail" style="max-width: 86px; max-height: 86px;">
+                                </a>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ comp.village }}, {{ comp.taluka }}
+                            {% if comp.has_coordinates %}
+                            <br><small class="text-muted">{{ comp.coordinates_text }}</small>
+                            <br><a href="{{ comp.map_url }}" target="_blank" rel="noopener" class="small">Open in Maps</a>
+                            {% endif %}
+                        </td>
                         <td>{{ comp.assigned_worker }}</td>
                         <td><span class="badge-soft {{ comp.status_class|replace('-', '_') }}">{{ comp.status_text }}</span></td>
                         <td>{{ comp.last_update }}</td>
@@ -65,33 +87,27 @@
                         <label class="form-label">Description</label>
                         <textarea name="description" class="form-control" rows="3" placeholder="Describe the issue in detail..." required></textarea>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label">District</label>
-                            <select name="district" id="districtSelect" class="form-control" required>
-                                <option value="">Select District</option>
-                                <option value="Pune">Pune</option>
-                                <option value="Ahmednagar">Ahmednagar</option>
-                                <option value="Satara">Satara</option>
-                                <option value="Kolhapur">Kolhapur</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Taluka</label>
-                            <select name="taluka" id="talukaSelect" class="form-control" required>
-                                <option value="">Select Taluka</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mb-3 mt-3">
-                        <label class="form-label">Village</label>
-                        <select name="village" id="villageSelect" class="form-control" required>
-                            <option value="">Select Village</option>
-                        </select>
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <div class="small text-muted mb-2">Search inside each dropdown to quickly find your district, taluka, and village.</div>
+                        {% include "dashboard/_complaint_location_fields.html" %}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Upload Photo (Optional)</label>
                         <input type="file" name="garbage_img" class="form-control" accept="image/*">
+                    </div>
+                    <div class="mb-3" data-location-capture>
+                        <label class="form-label">Live Spot Location</label>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <button type="button" class="btn btn-outline-success btn-sm" data-location-trigger>
+                                <i class="fas fa-location-crosshairs me-2"></i>Use Current Location
+                            </button>
+                            <span class="small text-muted" data-location-status>Capture your exact complaint spot so the worker can reach it faster.</span>
+                        </div>
+                        <input type="hidden" name="latitude" data-location-latitude>
+                        <input type="hidden" name="longitude" data-location-longitude>
+                        <input type="hidden" name="location_accuracy_meters" data-location-accuracy>
+                        <input type="text" class="form-control mt-2" data-location-preview placeholder="Latitude and longitude will appear here after capture." readonly>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Priority Level</label>
@@ -113,23 +129,6 @@
 {% endblock %}
 
 {% block user_scripts %}
-<script>
-document.getElementById('districtSelect')?.addEventListener('change', async function() {
-    const district = this.value;
-    const res = await fetch(`/api/talukas/${district}`);
-    const talukas = await res.json();
-    const select = document.getElementById('talukaSelect');
-    select.innerHTML = '<option value="">Select Taluka</option>';
-    talukas.forEach(t => select.innerHTML += `<option value="${t}">${t}</option>`);
-});
-
-document.getElementById('talukaSelect')?.addEventListener('change', async function() {
-    const taluka = this.value;
-    const res = await fetch(`/api/villages/${taluka}`);
-    const villages = await res.json();
-    const select = document.getElementById('villageSelect');
-    select.innerHTML = '<option value="">Select Village</option>';
-    villages.forEach(v => select.innerHTML += `<option value="${v}">${v}</option>`);
-});
-</script>
+{% include "dashboard/_complaint_location_script.html" %}
+{% include "dashboard/_location_capture_script.html" %}
 {% endblock %}

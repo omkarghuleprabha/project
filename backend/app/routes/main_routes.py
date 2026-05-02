@@ -1,5 +1,7 @@
-from flask import Blueprint, render_template, jsonify, session, redirect, url_for
+from flask import Blueprint, render_template, jsonify, session, redirect, url_for, request, flash
 from app.models.user_model import User
+from app.utils.db import get_db
+from app.utils.inquiries import create_inquiry
 # Note: Assuming you have State, District, Taluka, and Village models defined 
 # in your models folder as well.
 
@@ -23,13 +25,49 @@ def dashboard():
 # --- 🏠 HOME ROUTE ---
 @main_bp.route('/')
 def home():
+    initial_page = (request.args.get('page') or 'home').strip().lower()
+    if initial_page not in {'home', 'about', 'services', 'contact'}:
+        initial_page = 'home'
+
     try:
         u_count = User.query.count()
     except Exception as e:
         print(f"Stats Retrieval Error: {e}")
         u_count = 120 # Fallback demo value
     
-    return render_template('main/home.html', user_count=u_count)
+    return render_template('main/home.html', user_count=u_count, initial_page=initial_page)
+
+
+@main_bp.route('/submit-inquiry', methods=['POST'])
+def submit_inquiry():
+    full_name = (request.form.get('full_name') or '').strip()
+    mobile_number = (request.form.get('mobile_number') or '').strip()
+    message = (request.form.get('message') or '').strip()
+    redirect_target = url_for('main_bp.home', page='contact')
+
+    if not all([full_name, mobile_number, message]):
+        flash("Please fill in your name, mobile number, and inquiry message.", "warning")
+        return redirect(redirect_target)
+
+    conn = get_db()
+    if not conn:
+        flash("Inquiry service is unavailable right now. Please try again shortly.", "danger")
+        return redirect(redirect_target)
+
+    cursor = conn.cursor()
+
+    try:
+        create_inquiry(cursor, full_name, mobile_number, message)
+        conn.commit()
+        flash("Thank you for your inquiry! Our team will contact you soon.", "success")
+    except Exception as e:
+        print(f"Inquiry Submission Error: {e}")
+        conn.rollback()
+        flash("We could not save your inquiry right now. Please try again.", "danger")
+    finally:
+        conn.close()
+
+    return redirect(redirect_target)
 
 # --- ℹ️ ABOUT & SERVICES ---
 @main_bp.route('/about')

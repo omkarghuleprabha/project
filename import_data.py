@@ -1,90 +1,134 @@
 import pandas as pd
 import mysql.connector
-import os
 import sys
 
-# 1. AUTO-LOCATE THE CSV FILE
-# This looks for 'villages.csv' in the same folder as this script
-base_dir = os.path.dirname(os.path.abspath(__file__))
-csv_path = os.path.join(base_dir, "villages.csv")
+# =========================
+# 1. FILE PATH
+# =========================
+csv_path = r"D:\INTERSHIP\mini project\smart-garbage-management\villageofSpecificState20191224033059092.csv"
 
-if not os.path.exists(csv_path):
-    print(f"❌ Error: Could not find '{csv_path}'")
-    print("Ensure 'villages.csv' is in the same folder as this script.")
-    sys.exit()
+# =========================
+# 2. LOAD CSV (ENCODING FIX)
+# =========================
+print("📂 Loading CSV...")
 
-# 2. LOAD DATA
-print("📂 Loading CSV data...")
-df = pd.read_csv(csv_path)
-df = df.dropna(subset=['Village Name', 'Taluka', 'District'])
-
-# 3. DATABASE CONNECTION
 try:
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="1234",
-        database="smart_garbage_db"
+    df = pd.read_csv(csv_path, encoding="utf-8", low_memory=False)
+except UnicodeDecodeError:
+    print("⚠️ UTF-8 failed, trying latin1 encoding...")
+    df = pd.read_csv(csv_path, encoding="latin1", low_memory=False)
+
+# Clean column names
+df.columns = [c.strip().lower() for c in df.columns]
+
+print("✅ Total Records:", len(df))
+
+# =========================
+# 3. DATABASE CONNECTION
+# =========================
+conn = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="1234",
+    database="smart_garbage_db"
+)
+cursor = conn.cursor()
+
+print("🔗 Connected to DB")
+
+# =========================
+# 4. DELETE OLD DATA (RESET DB)
+# =========================
+print("🗑️ Clearing old data...")
+
+cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
+cursor.execute("TRUNCATE TABLE villages;")
+cursor.execute("TRUNCATE TABLE talukas;")
+cursor.execute("TRUNCATE TABLE districts;")
+cursor.execute("TRUNCATE TABLE states;")
+cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+
+conn.commit()
+
+# =========================
+# 5. INSERT STATE
+# =========================
+cursor.execute("INSERT INTO states (id, name) VALUES (%s, %s)", (1, "Maharashtra"))
+state_id = 1
+
+# =========================
+# 6. CACHE SYSTEM (FAST IMPORT)
+# =========================
+district_cache = {}
+taluka_cache = {}
+
+count = 0
+
+print("🚀 Importing LGD data...")
+
+# =========================
+# 7. MAIN LOOP
+# =========================
+for _, row in df.iterrows():
+
+    try:
+        district = str(row["district name"]).strip()
+        taluka = str(row["sub-district name (in english)"]).strip()
+        village = str(row["village name"]).strip()
+    except:
+        continue
+
+    if not district or not taluka or not village:
+        continue
+
+    # =========================
+    # DISTRICT INSERT
+    # =========================
+    if district not in district_cache:
+        cursor.execute(
+            "INSERT INTO districts (name, state_id) VALUES (%s, %s)",
+            (district, state_id)
+        )
+        district_cache[district] = cursor.lastrowid
+
+    district_id = district_cache[district]
+
+    # =========================
+    # TALUKA INSERT
+    # =========================
+    t_key = (taluka, district_id)
+
+    if t_key not in taluka_cache:
+        cursor.execute(
+            "INSERT INTO talukas (name, district_id) VALUES (%s, %s)",
+            (taluka, district_id)
+        )
+        taluka_cache[t_key] = cursor.lastrowid
+
+    taluka_id = taluka_cache[t_key]
+
+    # =========================
+    # VILLAGE INSERT
+    # =========================
+    cursor.execute(
+        "INSERT INTO villages (name, taluka_id) VALUES (%s, %s)",
+        (village, taluka_id)
     )
-    cursor = conn.cursor(dictionary=True)
-    print("🔗 Connected to smart_garbage_db")
 
-    # 4. CLEAN RESET (Optional - Remove if you want to keep old data)
-    print("🗑️  Cleaning old location data...")
-    cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
-    cursor.execute("TRUNCATE TABLE villages;")
-    cursor.execute("TRUNCATE TABLE talukas;")
-    cursor.execute("TRUNCATE TABLE districts;")
-    cursor.execute("TRUNCATE TABLE states;")
-    cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+    count += 1
 
-    # 5. INITIALIZE STATE
-    cursor.execute("INSERT INTO states (id, name) VALUES (1, 'Maharashtra')")
-    state_id = 1
+    if count % 1000 == 0:
+        print(f"✅ Imported {count} villages...")
 
-    # 6. IMPORT LOGIC WITH CACHING
-    districts_cache = {}
-    talukas_cache = {}
-    village_count = 0
+# =========================
+# 8. FINAL COMMIT
+# =========================
+conn.commit()
 
-    print("🚀 Starting Import of 9,441 records...")
+print("\n🎉 IMPORT COMPLETED SUCCESSFULLY!")
+print(f"Total Villages Imported: {count}")
 
-    for _, row in df.iterrows():
-        d_name = str(row['District']).strip()
-        t_name = str(row['Taluka']).strip()
-        v_name = str(row['Village Name']).strip()
+cursor.close()
+conn.close()
 
-        # Handle District
-        if d_name not in districts_cache:
-            cursor.execute("INSERT INTO districts (name, state_id) VALUES (%s, %s)", (d_name, state_id))
-            dist_id = cursor.lastrowid
-            districts_cache[d_name] = dist_id
-        else:
-            dist_id = districts_cache[d_name]
-
-        # Handle Taluka
-        t_key = (t_name, dist_id)
-        if t_key not in talukas_cache:
-            cursor.execute("INSERT INTO talukas (name, district_id) VALUES (%s, %s)", (t_name, dist_id))
-            tal_id = cursor.lastrowid
-            talukas_cache[t_key] = tal_id
-        else:
-            tal_id = talukas_cache[t_key]
-
-        # Handle Village
-        cursor.execute("INSERT INTO villages (name, taluka_id) VALUES (%s, %s)", (v_name, tal_id))
-        
-        village_count += 1
-        if village_count % 1000 == 0:
-            print(f"✅ {village_count} villages imported...")
-
-    conn.commit()
-    print(f"\n✨ DONE! Total Villages Imported: {village_count}")
-
-except mysql.connector.Error as err:
-    print(f"❌ Database Error: {err}")
-finally:
-    if 'conn' in locals() and conn.is_connected():
-        cursor.close()
-        conn.close()
-        print("🔌 Database connection closed.")
+print("🔌 Database connection closed")

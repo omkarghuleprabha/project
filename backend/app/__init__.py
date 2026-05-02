@@ -7,6 +7,7 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv  # ✅ FIXED: Now works after pip install
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Load environment variables FIRST
 load_dotenv()
@@ -37,6 +38,16 @@ def create_app(config_name='default'):
     
     # Override with environment variables
     app.config.from_prefixed_env()
+
+    proxy_fix_options = {
+        'x_for': int(app.config.get('PROXY_FIX_X_FOR', 0) or 0),
+        'x_proto': int(app.config.get('PROXY_FIX_X_PROTO', 0) or 0),
+        'x_host': int(app.config.get('PROXY_FIX_X_HOST', 0) or 0),
+        'x_port': int(app.config.get('PROXY_FIX_X_PORT', 0) or 0),
+        'x_prefix': int(app.config.get('PROXY_FIX_X_PREFIX', 0) or 0),
+    }
+    if any(proxy_fix_options.values()):
+        app.wsgi_app = ProxyFix(app.wsgi_app, **proxy_fix_options)
     
     # ========================================
     # JWT Configuration (Secure)
@@ -188,9 +199,53 @@ def create_app(config_name='default'):
         except (TypeError, ValueError):
             expires_at = None
 
+        announcement_items = []
+        announcement_count = 0
+        announcement_unread_ids = []
+        role = session.get('role')
+        state_id = session.get('scope_state_id')
+        district_id = session.get('scope_district_id')
+
+        if role in ('worker', 'admin', 'district_admin', 'state_admin') and state_id:
+            conn = None
+            try:
+                from app.utils.db import get_db
+                from app.utils.staff_portal import fetch_unread_announcements, fetch_visible_announcements
+
+                conn = get_db()
+                cursor = conn.cursor(dictionary=True)
+                announcement_items = fetch_visible_announcements(
+                    cursor,
+                    role,
+                    state_id=state_id,
+                    district_id=district_id,
+                    limit=8,
+                )
+                if role in ('worker', 'admin', 'district_admin'):
+                    unread_items = fetch_unread_announcements(
+                        cursor,
+                        role,
+                        session.get('user_id'),
+                        state_id=state_id,
+                        district_id=district_id,
+                        limit=8,
+                    )
+                    announcement_unread_ids = [item.get('id') for item in unread_items if item.get('id')]
+                    announcement_count = len(announcement_unread_ids)
+                else:
+                    announcement_count = len(announcement_items)
+            except Exception as err:
+                print(f"Announcement context error: {err}")
+            finally:
+                if conn:
+                    conn.close()
+
         return {
             'session_timeout_minutes': app.config.get('SESSION_TIMEOUT_MINUTES', 60),
             'session_expires_at_ts': expires_at,
+            'announcement_items': announcement_items,
+            'announcement_count': announcement_count,
+            'announcement_unread_ids': announcement_unread_ids,
         }
     
     # ========================================

@@ -1,0 +1,13 @@
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var datasetInputs = document.querySelectorAll('[data-report-dataset]');
+        datasetInputs.forEach(function (input) {
+            input.addEventListener('change', function () {
+                var selectedCard = input.closest('.dataset-card');
+                if (selectedCard) {
+                    selectedCard.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+            });
+        });
+    });
+</script>

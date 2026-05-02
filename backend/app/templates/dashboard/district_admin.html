@@ -312,6 +312,62 @@
     </div>
 </div>
 
+<div class="row g-4 mb-4" id="announcements">
+    <div class="col-lg-5">
+        <div class="content-card h-100">
+            <div class="section-head">
+                <div>
+                    <h3>District Announcement Desk</h3>
+                    <p>Send one instruction to the district admin network, taluka admins, and all workers inside your district.</p>
+                </div>
+            </div>
+            <form method="POST" action="{{ url_for('auth_bp.post_announcement') }}">
+                <input type="hidden" name="next_page" value="{{ request.path }}">
+                <div class="mb-3">
+                    <label class="form-label" for="districtAnnouncementTitle">Title</label>
+                    <input type="text" class="form-control" id="districtAnnouncementTitle" name="title" placeholder="e.g. Special cleanliness drive near weekly market" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="districtAnnouncementMessage">Instruction</label>
+                    <textarea class="form-control" id="districtAnnouncementMessage" name="message" rows="5" placeholder="Write the district-level instruction for all taluka admins and workers." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-dark">
+                    <i class="fas fa-paper-plane me-2"></i>Send District Announcement
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="content-card h-100">
+            <div class="section-head">
+                <div>
+                    <h3>Recent District Announcements</h3>
+                    <p>These updates also appear under the bell icon for district admins, taluka admins, and workers.</p>
+                </div>
+            </div>
+            <div class="escalation-list">
+                {% for item in announcement_feed %}
+                <div class="escalation-card">
+                    <div class="escalation-head">
+                        <span class="escalation-title">{{ item.title }}</span>
+                        <span class="mini-badge good">{{ item.scope_label }}</span>
+                    </div>
+                    <div class="escalation-meta">
+                        <span><i class="fas fa-clock me-1"></i>{{ item.created_at_text }}</span>
+                        <span><i class="fas fa-user-shield me-1"></i>{{ item.author_name or item.author_role_label }}</span>
+                    </div>
+                    <p class="escalation-copy">{{ item.message }}</p>
+                </div>
+                {% else %}
+                <div class="escalation-card">
+                    <p class="escalation-copy">No district announcements have been sent yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="content-card mb-4">
     <div class="section-head">
         <div>
@@ -588,6 +644,12 @@
                             <td>
                                 <strong>#{{ complaint.id }} {{ complaint.title }}</strong><br>
                                 <small class="text-muted">{{ complaint.village }} • {{ complaint.created_at_text }}</small>
+                                {% if complaint.has_coordinates %}
+                                <br><small class="text-muted">{{ complaint.coordinates_text }}</small>
+                                <br><a href="{{ complaint.map_url }}" target="_blank" rel="noopener" class="small">Open in Maps</a>
+                                {% elif complaint.map_url %}
+                                <br><a href="{{ complaint.map_url }}" target="_blank" rel="noopener" class="small">Open area in Maps</a>
+                                {% endif %}
                             </td>
                             <td>{{ complaint.citizen_name }}</td>
                             <td>{{ complaint.taluka }}</td>
@@ -627,6 +689,12 @@
                             <td>
                                 <strong>#{{ request.id }} {{ request.garbage_type }}</strong><br>
                                 <small class="text-muted">Rs {{ "{:,.0f}".format(request.amount or 0) }} • {{ request.created_at_text }}</small>
+                                {% if request.has_coordinates %}
+                                <br><small class="text-muted">{{ request.coordinates_text }}</small>
+                                <br><a href="{{ request.map_url }}" target="_blank" rel="noopener" class="small">Open in Maps</a>
+                                {% elif request.map_url %}
+                                <br><a href="{{ request.map_url }}" target="_blank" rel="noopener" class="small">Open area in Maps</a>
+                                {% endif %}
                             </td>
                             <td>{{ request.citizen_name }}</td>
                             <td>{{ request.taluka_name }}</td>
