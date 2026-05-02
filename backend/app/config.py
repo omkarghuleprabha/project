@@ -56,9 +56,14 @@ class Config:
     }
 
     # Add SSL for Aiven Cloud Production
+    # FIX: Use ssl_verify_cert=False to allow Aiven's self-signed certificates
     if IS_PRODUCTION or 'aivencloud.com' in MYSQL_HOST:
         SQLALCHEMY_ENGINE_OPTIONS['connect_args'] = {
-            "ssl": {"ca": "/etc/ssl/certs/ca-certificates.crt"} 
+            "ssl": {
+                "ssl_mode": "REQUIRED",
+                "check_hostname": False,
+                "ssl_verify_cert": False 
+            }
         }
 
     # ========================================
@@ -99,7 +104,7 @@ class Config:
         except (ValueError, TypeError):
             return default
 
-    # These use the static method to safely parse integers
+    # Proxy settings
     PROXY_FIX_X_FOR = 1 if IS_PRODUCTION else 0
     PROXY_FIX_X_PROTO = 1 if IS_PRODUCTION else 0
     PROXY_FIX_X_HOST = 1 if IS_PRODUCTION else 0
