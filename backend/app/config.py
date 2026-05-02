@@ -1,5 +1,9 @@
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# Load .env file for local development
+load_dotenv()
 
 # Base directory for the entire project
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -26,29 +30,35 @@ class Config:
     # ========================================
     # 2. MYSQL DATABASE SETTINGS 🗄️
     # ========================================
+    # These will pull from your .env locally or Render Environment Variables online
     MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
     MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '1234')
     MYSQL_DB = os.environ.get('MYSQL_DB', 'smart_garbage_db')
+    MYSQL_PORT = os.environ.get('MYSQL_PORT', '3306')
     
-    # SQLAlchemy URI for Flask-SQLAlchemy
+    # Determine the URI. Using pymysql as it is more compatible with Render/Aiven
     SQLALCHEMY_DATABASE_URI = (
-        f"mysql+mysqlconnector://"
-        f"{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}"
-        f"?charset=utf8mb4"
+        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
     )
     
-    # Legacy connection string for raw MySQL (get_db() function)
-    MYSQL_CONNECTION_STRING = f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}"
+    # Legacy connection string for raw MySQL
+    MYSQL_CONNECTION_STRING = SQLALCHEMY_DATABASE_URI
     
     # Performance & Security
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_pre_ping': True,
         'pool_recycle': 3600,
-        'pool_size': 20,
-        'max_overflow': 10
+        'pool_size': 10,
+        'max_overflow': 5
     }
+
+    # Add SSL for Aiven Cloud Production
+    if IS_PRODUCTION or 'aivencloud.com' in MYSQL_HOST:
+        SQLALCHEMY_ENGINE_OPTIONS['connect_args'] = {
+            "ssl": {"ca": "/etc/ssl/certs/ca-certificates.crt"} # Standard for Render/Debian
+        }
 
     # ========================================
     # 3. FILE UPLOAD SETTINGS 📁
@@ -97,7 +107,7 @@ class Config:
     CORS_ALLOWED_ORIGINS = [
         'http://localhost:5000',
         'http://127.0.0.1:5000',
-        'http://localhost:3000'  # React dev server
+        'http://localhost:3000'
     ]
 
     # ========================================
@@ -107,7 +117,7 @@ class Config:
     TESTING = os.environ.get('FLASK_TESTING', 'False').lower() == 'true'
     
     # Rate limiting
-    RATELIMIT_STORAGE_URL = 'redis://localhost:6379/0'
+    RATELIMIT_STORAGE_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -118,12 +128,6 @@ class ProductionConfig(Config):
     DEBUG = False
     SESSION_COOKIE_SECURE = True
     JWT_COOKIE_SECURE = True
-    
-    # Use environment variables in production
-    MYSQL_HOST = os.environ.get('MYSQL_HOST')
-    MYSQL_USER = os.environ.get('MYSQL_USER')
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
-    MYSQL_DB = os.environ.get('MYSQL_DB')
 
 class TestingConfig(Config):
     TESTING = True
