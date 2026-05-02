@@ -34,10 +34,12 @@ class Config:
     MYSQL_USER = os.environ.get('MYSQL_USER') or 'root'
     MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or '1234'
     MYSQL_DB = os.environ.get('MYSQL_DB') or 'smart_garbage_db'
-    # FIX: Added a fallback to prevent "invalid literal for int()" error
-    MYSQL_PORT = os.environ.get('MYSQL_PORT') or '3306'
     
-    # Determine the URI
+    # CRITICAL FIX: Detect and ignore empty strings from Render environment
+    _raw_port = os.environ.get('MYSQL_PORT')
+    MYSQL_PORT = _raw_port if (_raw_port and _raw_port.strip()) else '3306'
+    
+    # SQLAlchemy URI
     SQLALCHEMY_DATABASE_URI = (
         f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
     )
@@ -89,19 +91,20 @@ class Config:
     JWT_ACCESS_COOKIES = ['access_token']
     JWT_REFRESH_COOKIES = ['refresh_token']
     
-    # FIX: Added try/except to prevent int() errors for proxy settings
+    @staticmethod
     def get_int_env(key, default):
         try:
             val = os.environ.get(key)
-            return int(val) if val else default
+            return int(val) if (val and val.strip()) else default
         except (ValueError, TypeError):
             return default
 
-    PROXY_FIX_X_FOR = get_int_env('PROXY_FIX_X_FOR', 1 if IS_PRODUCTION else 0)
-    PROXY_FIX_X_PROTO = get_int_env('PROXY_FIX_X_PROTO', 1 if IS_PRODUCTION else 0)
-    PROXY_FIX_X_HOST = get_int_env('PROXY_FIX_X_HOST', 1 if IS_PRODUCTION else 0)
-    PROXY_FIX_X_PORT = get_int_env('PROXY_FIX_X_PORT', 1 if IS_PRODUCTION else 0)
-    PROXY_FIX_X_PREFIX = get_int_env('PROXY_FIX_X_PREFIX', 0)
+    # These use the static method to safely parse integers
+    PROXY_FIX_X_FOR = 1 if IS_PRODUCTION else 0
+    PROXY_FIX_X_PROTO = 1 if IS_PRODUCTION else 0
+    PROXY_FIX_X_HOST = 1 if IS_PRODUCTION else 0
+    PROXY_FIX_X_PORT = 1 if IS_PRODUCTION else 0
+    PROXY_FIX_X_PREFIX = 0
 
     CORS_ALLOWED_ORIGINS = [
         'http://localhost:5000',
